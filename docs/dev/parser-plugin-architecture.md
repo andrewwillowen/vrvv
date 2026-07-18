@@ -22,7 +22,7 @@ It is intended to guide implementation, even where code is still a stub.
 ## Data Flow
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Input file path] --> B{Parser selection}
     B -->|explicit: cfour| C[CFOUR parser plugin]
     B -->|auto-detect| D[Registry can_parse scan]
@@ -63,7 +63,7 @@ Recommended API shape:
 flowchart TD
     A[vrvv parse ...] --> B[load_builtin_parsers]
     B --> C{subcommand or parser arg}
-    C -->|cfour| D[get_parser c four]
+    C -->|cfour| D[get_parser cfour]
     C -->|auto| E[autodetect_parser]
     D --> F[parse_raw]
     E --> F

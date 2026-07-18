@@ -19,6 +19,7 @@ Example for CFOUR:
 
 ```text
 vrvv/ingest/cfour/
+  __init__.py
   raw.py
   parser.py
   normalize.py
