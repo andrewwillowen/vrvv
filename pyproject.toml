@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vrvv"
+dynamic = ["version"]
+description = 'Implementation of vibration-rotation Van Vleck perturbation theory'
+readme = "README.md"
+requires-python = ">=3.13"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Andrew Owen"},
+]
+classifiers = [
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = []
+
+[project.urls]
+Documentation = "https://github.com/andrewwillowen/vrvv#readme"
+Issues = "https://github.com/andrewwillowen/vrvv/issues"
+Source = "https://github.com/andrewwillowen/vrvv"
+
+[tool.hatch.version]
+path = "src/vrvv/__about__.py"
+
+[tool.hatch.envs.default]
+installer = "uv"
+
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/vrvv tests}"
+
+[tool.coverage.run]
+source_pkgs = ["vrvv", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/vrvv/__about__.py",
+]
+
+[tool.coverage.paths]
+vrvv = ["src/vrvv", "*/vrvv/src/vrvv"]
+tests = ["tests", "*/vrvv/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
