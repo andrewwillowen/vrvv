@@ -56,6 +56,9 @@ dependencies = ["vrvv[dev]"]
 [tool.hatch.envs.docs]
 python = "3.13"
 dependencies = ["vrvv[docs]"]
+[tool.hatch.envs.docs.scripts]
+build = "zensical build --clean"
+serve = "zensical serve"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
@@ -63,6 +66,21 @@ extra-dependencies = [
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/vrvv tests}"
+
+[tool.hatch.envs.hatch-static-analysis]
+dependencies = ["ruff"]
+format-check = [
+  "ruff format --check -diff {args:.}",
+]
+format-fix = [
+  "ruff format {args:.}",
+]
+lint-check = [
+  "ruff check {args:.}",
+]
+lint-fix = [
+  "ruff check --fix {args:.}",
+]
 
 [tool.coverage.run]
 source_pkgs = ["vrvv", "tests"]
@@ -82,3 +100,13 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/docs",
+  "/zensical.toml",
+]
+[tool.hatch.build.targets.wheel]
+packages = ["src/vrvv"]
+

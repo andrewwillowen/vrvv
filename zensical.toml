@@ -75,15 +75,15 @@ features = [
 
 # https://zensical.org/docs/setup/colors/
 [[project.theme.palette]]
-primary = "indigo"
-accent = "deep purple"
+primary = "deep purple"
+accent = "indigo"
 scheme = "default"
 toggle.icon = "lucide/sun"
 toggle.name = "Switch to dark mode"
 
 [[project.theme.palette]]
-primary = "indigo"
-accent = "deep purple"
+primary = "deep purple"
+accent = "indigo"
 scheme = "slate"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
