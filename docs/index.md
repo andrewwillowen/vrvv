@@ -1,173 +1,66 @@
----
-icon: lucide/rocket
----
+# vrvv
 
-# Get started
+Python implementation of the vibration-rotation Van Vleck perturbation theory approach
+for deriving predictions of vibration-rotation interactions in small molecules.
 
-For full documentation visit [zensical.org](https://zensical.org/docs/).
+## Getting started
 
-## Commands
-
-* [`zensical new`][new] - Create a new project
-* [`zensical serve`][serve] - Start local web server
-* [`zensical build`][build] - Build your site
-
-  [new]: https://zensical.org/docs/usage/new/
-  [serve]: https://zensical.org/docs/usage/preview/
-  [build]: https://zensical.org/docs/usage/build/
-
-## Examples
-
-### Admonitions
-
-> Go to [documentation](https://zensical.org/docs/authoring/admonitions/)
-
-!!! note
-
-    This is a **note** admonition. Use it to provide helpful information.
+### Installation
 
 !!! warning
+    
+    This package is under active development - functionality is subject to change
+    without notice (!).
 
-    This is a **warning** admonition. Be careful!
+Install the package using `pip` (requires `python >= 3.13`), `pipx`, or `uv`:
 
-### Details
-
-> Go to [documentation](https://zensical.org/docs/authoring/admonitions/#collapsible-blocks)
-
-??? info "Click to expand for more info"
-
-    This content is hidden until you click to expand it.
-    Great for FAQs or long explanations.
-
-## Code Blocks
-
-> Go to [documentation](https://zensical.org/docs/authoring/code-blocks/)
-
-``` python hl_lines="2" title="Code blocks"
-def greet(name):
-    print(f"Hello, {name}!") # (1)!
-
-greet("Python")
+```bash
+python3 -m pip install "git+https://github.com/andrewwillowen/vrvv.git@main"
 ```
 
-1.  > Go to [documentation](https://zensical.org/docs/authoring/code-blocks/#code-annotations)
-
-    Code annotations allow to attach notes to lines of code.
-
-Code can also be highlighted inline: `#!python print("Hello, Python!")`.
-
-## Content tabs
-
-> Go to [documentation](https://zensical.org/docs/authoring/content-tabs/)
-
-=== "Python"
-
-    ``` python
-    print("Hello from Python!")
-    ```
-
-=== "Rust"
-
-    ``` rs
-    println!("Hello from Rust!");
-    ```
-
-## Diagrams
-
-> Go to [documentation](https://zensical.org/docs/authoring/diagrams/)
-
-``` mermaid
-graph LR
-  A[Start] --> B{Error?};
-  B -->|Yes| C[Hmm...];
-  C --> D[Debug];
-  D --> B;
-  B ---->|No| E[Yay!];
+```bash
+pipx install "git+https://github.com/andrewwillowen/vrvv.git@main"
 ```
 
-## Footnotes
+```bash
+uv tool install "git+https://github.com/andrewwillowen/vrvv.git@main"
+```
 
-> Go to [documentation](https://zensical.org/docs/authoring/footnotes/)
+### The vrvv command
 
-Here's a sentence with a footnote.[^1]
+Once installed, run the command `vrvv` to see the help text.
 
-Hover it, to see a tooltip.
+```bash
+vrvv
+```
 
-[^1]: This is the footnote.
+### The vrvv Python module
 
+Eventually, you can write your own Python code on top of the vrvv package with
 
-## Formatting
+```python
+import vrvv
+```
 
-> Go to [documentation](https://zensical.org/docs/authoring/formatting/)
+## About
 
-- ==This was marked (highlight)==
-- ^^This was inserted (underline)^^
-- ~~This was deleted (strikethrough)~~
-- H~2~O
-- A^T^A
-- ++ctrl+alt+del++
+The work of this project is based on the final thesis chapter from the PhD defense of the author, Andrew N. Owen.
 
-## Icons, Emojis
+For now, to understand the purpose and foundation of this work, you should read the introduction of the chapter.
 
-> Go to [documentation](https://zensical.org/docs/authoring/icons-emojis/)
+**Bibtex citation**
 
-* :sparkles: `:sparkles:`
-* :rocket: `:rocket:`
-* :tada: `:tada:`
-* :memo: `:memo:`
-* :eyes: `:eyes:`
-
-## Maths
-
-> Go to [documentation](https://zensical.org/docs/authoring/math/)
-
-$$
-\cos x=\sum_{k=0}^{\infty}\frac{(-1)^k}{(2k)!}x^{2k}
-$$
-
-!!! warning "Needs configuration"
-    Note that MathJax is included via a `script` tag on this page and is not
-    configured in the generated default configuration to avoid including it
-    in a pages that do not need it. See the documentation for details on how
-    to configure it on all your pages if they are more Maths-heavy than these
-    simple starter pages.
-
-<script id="MathJax-script" src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
-<script>
-  window.MathJax = {
-    tex: {
-      inlineMath: [["\\(", "\\)"]],
-      displayMath: [["\\[", "\\]"]],
-      processEscapes: true,
-      processEnvironments: true
-    },
-    options: {
-      ignoreHtmlClass: ".*|",
-      processHtmlClass: "arithmatex"
-    }
-  };
-
-  document$.subscribe(() => {
-    MathJax.startup.output.clearCache()
-    MathJax.typesetClear()
-    MathJax.texReset()
-    MathJax.typesetPromise()
-  })
-</script>
-
-## Task Lists
-
-> Go to [documentation](https://zensical.org/docs/authoring/lists/#using-task-lists)
-
-* [x] Install Zensical
-* [x] Configure `zensical.toml`
-* [x] Write amazing documentation
-* [ ] Deploy anywhere
-
-## Tooltips
-
-> Go to [documentation](https://zensical.org/docs/authoring/tooltips/)
-
-[Hover me][example]
-
-  [example]: https://example.com "I'm a tooltip!"
+``` { .bibtex .copy }
+@phdthesis{
+    Owen, 2022,
+    author={Owen,Andrew N.},
+    year={2022},
+    title={Computational Methods Applied to the Study of the Structure, Spectra, and Reactivity of Small Organic Molecules},
+    journal={ProQuest Dissertations and Theses},
+    pages={424},
+    note={Copyright - Database copyright ProQuest LLC; ProQuest does not claim copyright in the individual underlying works; Last updated - 2023-03-08},
+    isbn={9798841766650},
+    language={English},
+    url={https://www.proquest.com/dissertations-theses/computational-methods-applied-study-structure/docview/2703382999/se-2}
+}
+```
