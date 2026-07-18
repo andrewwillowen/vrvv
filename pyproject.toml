@@ -18,7 +18,17 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+    "loguru>=0.7.3",
+    "numpy>=2.5.1",
+    "scipy>=1.18.0",
+    "sympy>=1.14.0",
+    "typer>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = []
+docs = []
 
 [project.urls]
 Documentation = "https://github.com/andrewwillowen/vrvv#readme"
@@ -30,6 +40,14 @@ path = "src/vrvv/__about__.py"
 
 [tool.hatch.envs.default]
 installer = "uv"
+
+[tool.hatch.envs.dev]
+python = "3.13"
+dependencies = ["vrvv[dev]"]
+
+[tool.hatch.envs.docs]
+python = "3.13"
+dependencies = ["vrvv[docs]"]
 
 [tool.hatch.envs.types]
 extra-dependencies = [
