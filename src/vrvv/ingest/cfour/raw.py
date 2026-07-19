@@ -13,3 +13,23 @@ class HarmonicFrequencies:
 class RawDataCFOUR:
     source_path: Path
     harmonic_frequencies: HarmonicFrequencies = dc.field(default_factory=HarmonicFrequencies)
+
+
+@dc.dataclass(slots=True)
+class RawCFOURAnharm:
+    pass
+
+
+@dc.dataclass(slots=True)
+class RawCFOURCubic:
+    pass
+
+
+@dc.dataclass(slots=True)
+class RawCFOURdidQ:
+    pass
+
+
+@dc.dataclass(slots=True)
+class RawCFOURZetas:
+    pass

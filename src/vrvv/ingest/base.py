@@ -12,7 +12,7 @@ class ParserPlugin(Protocol):
 
     name: str
 
-    def can_parse(self, path: Path) -> bool:
+    def can_parse(self, path: Path, *, strict: bool = True) -> bool:
         """Return whether this parser likely supports a file."""
 
     def parse_raw(self, path: Path) -> Any:
