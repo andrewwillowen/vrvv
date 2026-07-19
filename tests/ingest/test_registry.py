@@ -15,7 +15,8 @@ class DummyParser:
         self.name = name
         self._match_mode = match_mode
 
-    def can_parse(self, _path: Path) -> bool:
+    def can_parse(self, _path: Path, *, strict: bool = True) -> bool:
+        del strict
         return self._match_mode == "match"
 
     def parse_raw(self, path: Path) -> object:

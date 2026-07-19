@@ -6,7 +6,7 @@ from vrvv.__about__ import __version__
 from vrvv.cli.app import app
 
 runner = CliRunner()
-_CFOUR_FIXTURE = Path(__file__).parent / "fixtures" / "cfour" / "minimal.out"
+_CFOUR_FIXTURE_DIR = Path(__file__).parent / "fixtures" / "cfour"
 
 
 def test_root_help_lists_top_level_commands() -> None:
@@ -39,7 +39,7 @@ def test_cfour_help_documents_placeholder_command() -> None:
 
 
 def test_cfour_command_reports_placeholder_not_implemented() -> None:
-    result = runner.invoke(app, ["parse", "cfour", str(_CFOUR_FIXTURE)])
+    result = runner.invoke(app, ["parse", "cfour", str(_CFOUR_FIXTURE_DIR)])
 
     assert result.exit_code == 1
     output = f"{result.stdout}{result.stderr}"

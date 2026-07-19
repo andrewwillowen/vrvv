@@ -114,3 +114,5 @@ exclude = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/vrvv"]
 
+[tool.pytest.ini_options]
+addopts = "--basetemp=.pytest-tmp"

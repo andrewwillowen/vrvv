@@ -16,18 +16,26 @@ from vrvv.ingest.cfour.raw import (
 
 def parse_anharm_out(path: Path) -> RawCFOURAnharm:
     """Parses data from the 'anharm.out' file."""
+    message = f"CFOUR anharm.out parsing is not implemented yet for path: {path}"
+    raise NotImplementedError(message)
 
 
 def parse_zetas(path: Path) -> RawCFOURZetas:
     """Parses data from the 'corioliszeta' file."""
+    message = f"CFOUR corioliszeta parsing is not implemented yet for path: {path}"
+    raise NotImplementedError(message)
 
 
 def parse_cubic(path: Path) -> RawCFOURCubic:
     """Parses data from the 'cubic' file."""
+    message = f"CFOUR cubic parsing is not implemented yet for path: {path}"
+    raise NotImplementedError(message)
 
 
 def parse_didQ(path: Path) -> RawCFOURdidQ:  # noqa: N802
     """Parses data from the 'didQ' file."""
+    message = f"CFOUR didQ parsing is not implemented yet for path: {path}"
+    raise NotImplementedError(message)
 
 
 class CFOURParser(ParserPlugin):
