@@ -2,6 +2,8 @@
 Main Typer entrypoint for vrvv CLI
 """
 
+from typing import Annotated
+
 import typer
 
 from vrvv.__about__ import __version__
@@ -14,12 +16,14 @@ app = typer.Typer(no_args_is_help=True)
 # Add global flags
 @app.callback()
 def cli_callback(
-    verbose: bool = typer.Option(
-        False,
-        "--verbose",
-        "-v",
-        help="Enable debug logging.",
-    ),
+    verbose: Annotated[  # noqa: FBT002
+        bool,
+        typer.Option(
+            "--verbose",
+            "-v",
+            help="Enable debug logging.",
+        ),
+    ] = False,
 ) -> None:
     level = "DEBUG" if verbose else "INFO"
     configure_logging(level=level)

@@ -66,6 +66,7 @@ serve = "zensical serve"
 [tool.hatch.envs.types]
 extra-dependencies = [
   "mypy>=1.0.0",
+  "vrvv[dev]",
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/vrvv tests}"

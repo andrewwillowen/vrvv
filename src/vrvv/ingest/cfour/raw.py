@@ -1,13 +1,15 @@
 """Typed dataclasses for holding CFOUR-specific raw data."""
 
 import dataclasses as dc
+from pathlib import Path
 
 
-@dc.dataclass
+@dc.dataclass(slots=True)
 class HarmonicFrequencies:
-    pass
+    values_cm1: list[float] = dc.field(default_factory=list)
 
 
-@dc.dataclass
+@dc.dataclass(slots=True)
 class RawDataCFOUR:
-    pass
+    source_path: Path
+    harmonic_frequencies: HarmonicFrequencies = dc.field(default_factory=HarmonicFrequencies)
