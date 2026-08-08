@@ -48,19 +48,33 @@ def test_parse_labeled_float_row_raises_on_bad_column_count() -> None:
 
 
 def test_parse_indexed_value_row_parses_one_indexed_indices() -> None:
-    indices, value = parse_indexed_value_row("2 4 -0.125", n_indices=2)
+    indices, values = parse_indexed_value_row("2 4 -0.125", n_indices=2, n_values=1)
 
     assert indices == (1, 3)
-    assert value == -0.125
+    assert values == (-0.125,)
 
 
 def test_parse_indexed_value_row_supports_zero_indexed_input() -> None:
-    indices, value = parse_indexed_value_row("0 3 10.5", n_indices=2, one_indexed=False)
+    indices, values = parse_indexed_value_row("0 3 10.5", n_indices=2, n_values=1, one_indexed=False)
 
     assert indices == (0, 3)
-    assert value == 10.5
+    assert values == (10.5,)
 
 
 def test_parse_indexed_value_row_raises_for_non_positive_one_indexed() -> None:
     with pytest.raises(CFOURTextParseError, match="non-positive index"):
-        parse_indexed_value_row("0 1 1.0", n_indices=2)
+        parse_indexed_value_row("0 1 1.0", n_indices=2, n_values=1)
+
+
+def test_parse_indexed_value_row_parses_multiple_values() -> None:
+    """Test parsing multiple values after indices (e.g., complex numbers or vector components)."""
+    indices, values = parse_indexed_value_row("1 2 100.5 -0.01 0.5", n_indices=2, n_values=3)
+
+    assert indices == (0, 1)
+    assert values == (100.5, -0.01, 0.5)
+
+
+def test_parse_indexed_value_row_raises_on_wrong_value_count() -> None:
+    """Test error when value count doesn't match n_values."""
+    with pytest.raises(CFOURTextParseError, match="Expected 5 columns"):
+        parse_indexed_value_row("1 2 100.5 -0.01", n_indices=2, n_values=3)

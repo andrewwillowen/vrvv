@@ -192,14 +192,16 @@ def parse_indexed_value_row(
     line: str,
     *,
     n_indices: int,
+    n_values: int = 1,
     one_indexed: bool = True,
-) -> tuple[tuple[int, ...], float]:
-    """Parse ``<index> <index> ... <value>`` rows.
+) -> tuple[tuple[int, ...], tuple[float, ...]]:
+    """Parse ``<index> <index> ... <value> <value> ...`` rows.
     
     Extracts a tuple of indices (typically dimension/mode references) followed by
-    a single floating-point value from a whitespace-delimited row. This pattern
+    one or more floating-point values from a whitespace-delimited row. This pattern
     is common in CFOUR output for force constants and other tensors, where the
-    index tuple identifies which element of the tensor is being specified.
+    index tuple identifies which element of the tensor is being specified, and
+    multiple values may be associated with that element.
     
     By default, indices are assumed to be one-indexed (as in Fortran/CFOUR output)
     and are automatically converted to zero-indexed for Python use. This conversion
@@ -207,39 +209,50 @@ def parse_indexed_value_row(
     
     Args:
         line: A single line to parse (typically from iter_data_lines).
-        n_indices: The expected number of indices before the value.
+        n_indices: The expected number of indices before the values.
             Must match the actual number of index tokens, or an error is raised.
+        n_values: The expected number of floating-point values after the indices
+            (default: 1). Must match the actual number of value tokens, or an
+            error is raised.
         one_indexed: If True (default), input indices are one-indexed (starting at 1)
             and are converted to zero-indexed (starting at 0). If False, input is
             assumed to already be zero-indexed and returned as-is.
     
     Returns:
-        A tuple of (index_tuple, value), where index_tuple is a tuple of ints
-        (zero-indexed if one_indexed=True) and value is a float.
+        A tuple of (index_tuple, values_tuple), where index_tuple is a tuple of ints
+        (zero-indexed if one_indexed=True) and values_tuple is a tuple of floats
+        with length == n_values.
     
     Raises:
-        CFOURTextParseError: If the line does not contain exactly (n_indices + 1)
+        CFOURTextParseError: If the line does not contain exactly (n_indices + n_values)
             whitespace-separated tokens, if any index token cannot be parsed as int,
             if any value token cannot be parsed as float, or (if one_indexed=True)
             if any input index is <= 0.
     
-    Example - cubic force constants (1-indexed from file):
+    Example - single value per index (cubic force constants, 1-indexed from file):
         >>> # CFOUR output: "1 1 1 123.456" means F_{000} = 123.456 (cubic constant)
         >>> line = "1 1 1 123.456"
-        >>> indices, value = parse_indexed_value_row(line, n_indices=3, one_indexed=True)
-        >>> print(f"indices: {indices}, value: {value}")
-        indices: (0, 0, 0), value: 123.456
+        >>> indices, values = parse_indexed_value_row(line, n_indices=3, n_values=1)
+        >>> print(f"indices: {indices}, values: {values}")
+        indices: (0, 0, 0), values: (123.456,)
         
         >>> # Another example: "2 3 45.6"
         >>> line = "2 3 45.6"
-        >>> indices, value = parse_indexed_value_row(line, n_indices=2, one_indexed=True)
+        >>> indices, (value,) = parse_indexed_value_row(line, n_indices=2, n_values=1)
         >>> print(f"Matrix element ({indices}): {value}")
         Matrix element ((1, 2)): 45.6
+    
+    Example - multiple values per index:
+        >>> # Quadratic force constants with both real and imaginary parts: "1 2 100.5 -0.01"
+        >>> line = "1 2 100.5 -0.01"
+        >>> indices, (real, imag) = parse_indexed_value_row(line, n_indices=2, n_values=2)
+        >>> print(f"F[{indices}] = {real} + {imag}i")
+        F[(0, 1)] = 100.5 + -0.01i
     
     Example - already zero-indexed:
         >>> # If input is already zero-indexed, disable conversion:
         >>> line = "0 0 0 100.0"
-        >>> indices, value = parse_indexed_value_row(line, n_indices=3, one_indexed=False)
+        >>> indices, (value,) = parse_indexed_value_row(line, n_indices=3, n_values=1, one_indexed=False)
         >>> print(indices)
         (0, 0, 0)
     
@@ -248,17 +261,23 @@ def parse_indexed_value_row(
         
             cubic_constants = {}
             for line in iter_data_lines(cubic_section):
-                indices, value = parse_indexed_value_row(line, n_indices=3)
+                indices, (value,) = parse_indexed_value_row(line, n_indices=3, n_values=1)
                 cubic_constants[indices] = value  # Sparse representation
+            
+            # Or with multiple values per index:
+            derivatives = {}
+            for line in iter_data_lines(derivative_section):
+                indices, values = parse_indexed_value_row(line, n_indices=2, n_values=3)
+                derivatives[indices] = values  # Store all 3 derivative components
     """
     parts = line.split()
-    expected_columns = n_indices + 1
+    expected_columns = n_indices + n_values
     if len(parts) != expected_columns:
         message = f"Expected {expected_columns} columns in indexed row, got {len(parts)}: {line!r}"
         raise CFOURTextParseError(message)
 
     raw_indices = parts[:n_indices]
-    raw_value = parts[-1]
+    raw_values = parts[n_indices:]
 
     try:
         indices = tuple(int(token) for token in raw_indices)
@@ -273,9 +292,9 @@ def parse_indexed_value_row(
         indices = tuple(index - 1 for index in indices)
 
     try:
-        value = float(raw_value)
+        values = tuple(float(token) for token in raw_values)
     except ValueError as error:
         message = f"Invalid float value in indexed row: {line!r}"
         raise CFOURTextParseError(message) from error
 
-    return indices, value
+    return indices, values
