@@ -12,10 +12,60 @@ from vrvv.ingest.cfour.raw import (
     RawCFOURZetas,
     RawDataCFOUR,
 )
+from vrvv.ingest.cfour._textparse import (
+    CFOURTextParseError,
+    extract_section,
+    iter_data_lines,
+    parse_indexed_value_row,
+    parse_labeled_float_row,
+)
+
+
+def parse_rotational_constants(text: str) -> tuple[int | float, ...]:
+    """Parse the equilibrium rotational constants"""
+    rotational_constants_section = extract_section(
+        text,
+        "Be, B0 AND B-B0 SHIFTS FOR SINGLY EXCITED VIBRATIONAL STATES (MHz)",
+        "Vibrationally averaged dipole moment",
+    )
+    rotational_constants_lines = list(
+        iter_data_lines(rotational_constants_section, skip_prefixes=("VIB",))
+    )
+    be_label, be_values_mhz = parse_labeled_float_row(
+        rotational_constants_lines[0], n_values=3
+    )
+    return be_values_mhz
+
+
+def parse_harmonic_frequencies(text: str) -> dict[int, float]:
+    """Parse the harmonic vibrational frequencies"""
+    harmonics_section = extract_section(
+        text,
+        "HARMONIC AND FUNDAMENTAL FREQUENCIES (cm-1) AND INTENSITIES (km/mol)",
+        "ZERO-POINT VIBRATIONAL ENERGIES",
+    )
+    harmonics_lines = list(
+        iter_data_lines(harmonics_section, skip_prefixes=("Har", "Mod"))
+    )
+    harmonics_wn: dict[int, float] = {}
+    for line in harmonics_lines:
+        index, values = parse_indexed_value_row(line, n_indices=1, n_values=6)
+        harmonics_wn[index[0]] = values[0]
+
+    return harmonics_wn
 
 
 def parse_anharm_out(path: Path) -> RawCFOURAnharm:
     """Parses data from the 'anharm.out' file."""
+    with open(path, "r") as f:
+        anharm_file = f.read()
+
+    # Parse the equilibrium rotational constants
+    equilibrium_rotational_constants_mhz = parse_rotational_constants(anharm_file)
+
+    # Parse the harmonic vibrational frequencies
+    harmonic_vibrational_frequencies_wn = parse_harmonic_frequencies(anharm_file)
+
     message = f"CFOUR anharm.out parsing is not implemented yet for path: {path}"
     raise NotImplementedError(message)
 
@@ -60,7 +110,9 @@ class CFOURParser(ParserPlugin):
 
         logger.debug("CFOUR can_parse path='{}' | is a directory.", path)
 
-        file_dict: dict = dict.fromkeys(("anharm.out", "corioliszeta", "cubic", "didQ"), False)
+        file_dict: dict = dict.fromkeys(
+            ("anharm.out", "corioliszeta", "cubic", "didQ"), False
+        )
 
         for key in file_dict:
             file_path = path / key
@@ -79,7 +131,9 @@ class CFOURParser(ParserPlugin):
             return True
 
         if (not strict) and any(i for i in file_dict.values()):
-            logger.debug("CFOUR can_parse path='{}' matched=True strict={}.", path, strict)
+            logger.debug(
+                "CFOUR can_parse path='{}' matched=True strict={}.", path, strict
+            )
             return True
 
         logger.debug("CFOUR can_parse path='{}' matched=False.", path)
