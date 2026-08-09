@@ -6,6 +6,8 @@ from loguru import logger
 
 from vrvv.ingest.base import ParserPlugin
 from vrvv.ingest.cfour.raw import (
+    RawRotationalConstants,
+    RawHarmonicFrequencies,
     RawCFOURAnharm,
     RawCFOURCubic,
     RawCFOURdidQ,
@@ -13,7 +15,6 @@ from vrvv.ingest.cfour.raw import (
     RawDataCFOUR,
 )
 from vrvv.ingest.cfour._textparse import (
-    CFOURTextParseError,
     extract_section,
     iter_data_lines,
     parse_indexed_value_row,
@@ -21,7 +22,7 @@ from vrvv.ingest.cfour._textparse import (
 )
 
 
-def parse_rotational_constants(text: str) -> tuple[int | float, ...]:
+def parse_rotational_constants(text: str) -> RawRotationalConstants:
     """Parse the equilibrium rotational constants"""
     rotational_constants_section = extract_section(
         text,
@@ -31,13 +32,14 @@ def parse_rotational_constants(text: str) -> tuple[int | float, ...]:
     rotational_constants_lines = list(
         iter_data_lines(rotational_constants_section, skip_prefixes=("VIB",))
     )
-    be_label, be_values_mhz = parse_labeled_float_row(
+    _be_label, be_values_mhz = parse_labeled_float_row(
         rotational_constants_lines[0], n_values=3
     )
-    return be_values_mhz
+    result = RawRotationalConstants(*be_values_mhz)
+    return result
 
 
-def parse_harmonic_frequencies(text: str) -> dict[int, float]:
+def parse_harmonic_frequencies(text: str) -> RawHarmonicFrequencies:
     """Parse the harmonic vibrational frequencies"""
     harmonics_section = extract_section(
         text,
@@ -54,7 +56,8 @@ def parse_harmonic_frequencies(text: str) -> dict[int, float]:
         )
         harmonics_wn[index[0]] = values[0]
 
-    return harmonics_wn
+    result = RawHarmonicFrequencies(by_index=harmonics_wn)
+    return result
 
 
 def parse_anharm_out(path: Path) -> RawCFOURAnharm:
@@ -62,14 +65,10 @@ def parse_anharm_out(path: Path) -> RawCFOURAnharm:
     with open(path, "r") as f:
         anharm_file = f.read()
 
-    # Parse the equilibrium rotational constants
-    equilibrium_rotational_constants_mhz = parse_rotational_constants(anharm_file)
-
-    # Parse the harmonic vibrational frequencies
-    harmonic_vibrational_frequencies_wn = parse_harmonic_frequencies(anharm_file)
-
-    message = f"CFOUR anharm.out parsing is not implemented yet for path: {path}"
-    raise NotImplementedError(message)
+    return RawCFOURAnharm(
+        equilibrium_rotational_constants=parse_rotational_constants(anharm_file),
+        harmonic_frequencies=parse_harmonic_frequencies(anharm_file),
+    )
 
 
 def parse_zetas(path: Path) -> RawCFOURZetas:

@@ -9,12 +9,19 @@ the vrvv package.
 
 from vrvv.ingest.cfour.normalize import normalize_cfour_data
 from vrvv.ingest.cfour.parser import CFOUR_PLUGIN, CFOURParser
-from vrvv.ingest.cfour.raw import HarmonicFrequencies, RawDataCFOUR
+from vrvv.ingest.cfour.raw import (
+    RawCFOURAnharm,
+    RawDataCFOUR,
+    RawHarmonicFrequencies,
+    RawRotationalConstants,
+)
 
 __all__ = [
     "CFOUR_PLUGIN",
     "CFOURParser",
-    "HarmonicFrequencies",
+    "RawCFOURAnharm",
     "RawDataCFOUR",
+    "RawHarmonicFrequencies",
+    "RawRotationalConstants",
     "normalize_cfour_data",
 ]

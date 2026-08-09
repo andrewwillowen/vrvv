@@ -5,19 +5,31 @@ from pathlib import Path
 
 
 @dc.dataclass(slots=True)
-class HarmonicFrequencies:
-    values_cm1: list[float] = dc.field(default_factory=list)
+class RawDataCFOUR:
+    source_path: Path
 
 
 @dc.dataclass(slots=True)
-class RawDataCFOUR:
-    source_path: Path
-    harmonic_frequencies: HarmonicFrequencies = dc.field(default_factory=HarmonicFrequencies)
+class RawRotationalConstants:
+    # Be (equilibrium rotational constants) in MHz
+    X: float
+    Y: float
+    Z: float
+
+
+@dc.dataclass(slots=True)
+class RawHarmonicFrequencies:
+    # Harmonic frequencies in wavenumbers (cm^-1)
+    # Uses original indexing - lowest energy mode has index of 7
+    by_index: dict[int, float] = dc.field(default_factory=dict)
+    first_mode_index: int = 7
 
 
 @dc.dataclass(slots=True)
 class RawCFOURAnharm:
-    pass
+    # Ingest from anharm.out file
+    equilibrium_rotational_constants: RawRotationalConstants
+    harmonic_frequencies: RawHarmonicFrequencies
 
 
 @dc.dataclass(slots=True)
