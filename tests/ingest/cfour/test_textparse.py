@@ -55,7 +55,9 @@ def test_parse_indexed_value_row_parses_one_indexed_indices() -> None:
 
 
 def test_parse_indexed_value_row_supports_zero_indexed_input() -> None:
-    indices, values = parse_indexed_value_row("0 3 10.5", n_indices=2, n_values=1, one_indexed=False)
+    indices, values = parse_indexed_value_row(
+        "0 3 10.5", n_indices=2, n_values=1, make_zero_indexed=False
+    )
 
     assert indices == (0, 3)
     assert values == (10.5,)

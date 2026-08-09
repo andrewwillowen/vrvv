@@ -49,7 +49,9 @@ def parse_harmonic_frequencies(text: str) -> dict[int, float]:
     )
     harmonics_wn: dict[int, float] = {}
     for line in harmonics_lines:
-        index, values = parse_indexed_value_row(line, n_indices=1, n_values=6)
+        index, values = parse_indexed_value_row(
+            line, n_indices=1, n_values=6, make_zero_indexed=False
+        )
         harmonics_wn[index[0]] = values[0]
 
     return harmonics_wn

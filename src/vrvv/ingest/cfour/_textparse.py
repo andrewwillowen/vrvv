@@ -193,7 +193,7 @@ def parse_indexed_value_row(
     *,
     n_indices: int,
     n_values: int = 1,
-    one_indexed: bool = True,
+    make_zero_indexed: bool = True,
 ) -> tuple[tuple[int, ...], tuple[float, ...]]:
     """Parse ``<index> <index> ... <value> <value> ...`` rows.
     
@@ -204,8 +204,9 @@ def parse_indexed_value_row(
     multiple values may be associated with that element.
     
     By default, indices are assumed to be one-indexed (as in Fortran/CFOUR output)
-    and are automatically converted to zero-indexed for Python use. This conversion
-    can be disabled if the input is already zero-indexed.
+    and are automatically converted to zero-indexed for Python use. Set
+    ``make_zero_indexed=False`` to preserve the original one-indexed values from
+    the source file.
     
     Args:
         line: A single line to parse (typically from iter_data_lines).
@@ -214,20 +215,19 @@ def parse_indexed_value_row(
         n_values: The expected number of floating-point values after the indices
             (default: 1). Must match the actual number of value tokens, or an
             error is raised.
-        one_indexed: If True (default), input indices are one-indexed (starting at 1)
-            and are converted to zero-indexed (starting at 0). If False, input is
-            assumed to already be zero-indexed and returned as-is.
+        make_zero_indexed: If True (default), treat input indices as one-indexed
+            and convert them to zero-indexed. If False, return input indices as-is.
     
     Returns:
         A tuple of (index_tuple, values_tuple), where index_tuple is a tuple of ints
-        (zero-indexed if one_indexed=True) and values_tuple is a tuple of floats
+        (zero-indexed if make_zero_indexed=True) and values_tuple is a tuple of floats
         with length == n_values.
     
     Raises:
         CFOURTextParseError: If the line does not contain exactly (n_indices + n_values)
             whitespace-separated tokens, if any index token cannot be parsed as int,
-            if any value token cannot be parsed as float, or (if one_indexed=True)
-            if any input index is <= 0.
+            if any value token cannot be parsed as float, or (if
+            make_zero_indexed=True) if any input index is <= 0.
     
     Example - single value per index (cubic force constants, 1-indexed from file):
         >>> # CFOUR output: "1 1 1 123.456" means F_{000} = 123.456 (cubic constant)
@@ -249,10 +249,12 @@ def parse_indexed_value_row(
         >>> print(f"F[{indices}] = {real} + {imag}i")
         F[(0, 1)] = 100.5 + -0.01i
     
-    Example - already zero-indexed:
-        >>> # If input is already zero-indexed, disable conversion:
+    Example - preserve one-indexed source values:
+        >>> # To keep CFOUR's original one-indexed values, disable conversion:
         >>> line = "0 0 0 100.0"
-        >>> indices, (value,) = parse_indexed_value_row(line, n_indices=3, n_values=1, one_indexed=False)
+        >>> indices, (value,) = parse_indexed_value_row(
+        ...     line, n_indices=3, n_values=1, make_zero_indexed=False
+        ... )
         >>> print(indices)
         (0, 0, 0)
     
@@ -285,7 +287,7 @@ def parse_indexed_value_row(
         message = f"Invalid integer token in indexed row: {line!r}"
         raise CFOURTextParseError(message) from error
 
-    if one_indexed:
+    if make_zero_indexed:
         if any(index <= 0 for index in indices):
             message = f"One-indexed row contains non-positive index: {line!r}"
             raise CFOURTextParseError(message)
