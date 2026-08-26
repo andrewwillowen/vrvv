@@ -7,6 +7,7 @@ from vrvv.ingest.cfour.parser import (
     CFOURParser,
     parse_anharm_out,
     parse_cubic,
+    parse_didQ,
     parse_harmonic_frequencies,
     parse_rotational_constants,
     parse_zetas,
@@ -25,6 +26,9 @@ FIXTURE_CORIOLIS_ZETA = (
 )
 FIXTURE_CUBIC = (
     Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "cfour" / "cubic"
+)
+FIXTURE_DIDQ = (
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "cfour" / "didQ"
 )
 
 
@@ -199,3 +203,54 @@ def test_parse_cubic_raises_on_invalid_value_token(tmp_path) -> None:
 
     with pytest.raises(CFOURTextParseError, match="Invalid float value"):
         parse_cubic(malformed_cubic)
+
+
+def test_parse_didq_preserves_cfour_full_matrix_entries() -> None:
+    raw = parse_didQ(FIXTURE_DIDQ)
+
+    assert raw.mode_indices.shape == (54, 3)
+    assert raw.values.shape == (54,)
+    assert tuple(raw.mode_indices[0]) == (1, 1, 7)
+    assert raw.values[0] == pytest.approx(-0.108852040926033)
+    assert tuple(raw.mode_indices[-1]) == (3, 3, 12)
+    assert raw.values[-1] == pytest.approx(-3.370103714203765)
+
+
+def test_parse_didq_raises_on_empty_file(tmp_path) -> None:
+    empty_didq = tmp_path / "didQ"
+    empty_didq.write_text("")
+
+    with pytest.raises(ValueError, match="empty"):
+        parse_didQ(empty_didq)
+
+
+def test_parse_didq_raises_on_blank_only_file(tmp_path) -> None:
+    blank_didq = tmp_path / "didQ"
+    blank_didq.write_text("\n\n   \n")
+
+    with pytest.raises(ValueError, match="empty"):
+        parse_didQ(blank_didq)
+
+
+def test_parse_didq_raises_on_wrong_column_count(tmp_path) -> None:
+    malformed_didq = tmp_path / "didQ"
+    malformed_didq.write_text("1    1    7\n")
+
+    with pytest.raises(CFOURTextParseError, match="Expected 4 columns"):
+        parse_didQ(malformed_didq)
+
+
+def test_parse_didq_raises_on_invalid_index_token(tmp_path) -> None:
+    malformed_didq = tmp_path / "didQ"
+    malformed_didq.write_text("1    x    7    -0.108852040926033\n")
+
+    with pytest.raises(CFOURTextParseError, match="Invalid integer token"):
+        parse_didQ(malformed_didq)
+
+
+def test_parse_didq_raises_on_invalid_value_token(tmp_path) -> None:
+    malformed_didq = tmp_path / "didQ"
+    malformed_didq.write_text("1    1    7    not-a-float\n")
+
+    with pytest.raises(CFOURTextParseError, match="Invalid float value"):
+        parse_didQ(malformed_didq)

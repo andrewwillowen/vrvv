@@ -47,7 +47,14 @@ class RawCFOURCubic:
 
 @dc.dataclass(slots=True)
 class RawCFOURdidQ:
-    pass
+    """Source-faithful dipole moment derivative entries from the 'didQ' file."""
+
+    # First two indices are Cartesian axis components (one-indexed, 1-3);
+    # the third is the CFOUR mode number (one-indexed, from 7).
+    # All entries present in the source file are stored, matching the CFOUR
+    # file layout (no reduction to a permutation-unique or triangular subset).
+    mode_indices: NDArray[np.int64]
+    values: NDArray[np.float64]
 
 
 @dc.dataclass(slots=True)

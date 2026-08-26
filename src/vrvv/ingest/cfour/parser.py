@@ -140,9 +140,22 @@ def parse_cubic(path: Path) -> RawCFOURCubic:
 
 
 def parse_didQ(path: Path) -> RawCFOURdidQ:  # noqa: N802
-    """Parses data from the 'didQ' file."""
-    message = f"CFOUR didQ parsing is not implemented yet for path: {path}"
-    raise NotImplementedError(message)
+    """Parse source-faithful dipole moment derivatives from a 'didQ' file."""
+    didq_lines = list(iter_data_lines(path.read_text()))
+    if not didq_lines:
+        message = "didQ file is empty!"
+        raise ValueError(message)
+
+    mode_indices = np.empty((len(didq_lines), 3), dtype=np.int64)
+    values = np.empty(len(didq_lines), dtype=np.float64)
+    for row, line in enumerate(didq_lines):
+        indices, (value,) = parse_indexed_value_row(
+            line, n_indices=3, n_values=1, make_zero_indexed=False
+        )
+        mode_indices[row] = indices
+        values[row] = value
+
+    return RawCFOURdidQ(mode_indices=mode_indices, values=values)
 
 
 class CFOURParser(ParserPlugin):
