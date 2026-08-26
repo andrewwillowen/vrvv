@@ -59,9 +59,9 @@ def test_parse_rotational_constants_from_fixture() -> None:
 
     constants = parse_rotational_constants(text)
 
-    assert constants.X == pytest.approx(609196.61481899)
-    assert constants.Y == pytest.approx(12111.96058742)
-    assert constants.Z == pytest.approx(11875.84668995)
+    assert pytest.approx(609196.61481899) == constants.X
+    assert pytest.approx(12111.96058742) == constants.Y
+    assert pytest.approx(11875.84668995) == constants.Z
 
 
 def test_parse_harmonic_frequencies_from_fixture_keeps_cfour_mode_indices() -> None:
@@ -78,7 +78,7 @@ def test_parse_harmonic_frequencies_from_fixture_keeps_cfour_mode_indices() -> N
 def test_parse_anharm_out_builds_raw_dataclass_from_fixture() -> None:
     raw = parse_anharm_out(FIXTURE_ANHARM_OUT)
 
-    assert raw.equilibrium_rotational_constants.X == pytest.approx(609196.61481899)
+    assert pytest.approx(609196.61481899) == raw.equilibrium_rotational_constants.X
     assert raw.harmonic_frequencies.by_index[7] == pytest.approx(531.5451)
 
 

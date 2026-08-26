@@ -17,7 +17,9 @@ def test_extract_section_returns_text_between_markers() -> None:
     assert result == "\nline-1\nline-2\n"
 
 
-def test_extract_section_returns_text_through_end_of_file_when_end_marker_is_none() -> None:
+def test_extract_section_returns_text_through_end_of_file_when_end_marker_is_none() -> (
+    None
+):
     text = "header\nSTART\nline-1\nEND\nline-2\n"
 
     result = extract_section(text, "START", None)
@@ -45,7 +47,9 @@ def test_extract_section_raises_when_end_marker_missing() -> None:
 
 
 def test_iter_data_lines_filters_blanks_separators_and_prefixes() -> None:
-    section = "\n  VIBRATION X Y Z\n  -----------\n  Be 1.0 2.0 3.0\n   \n  B0 4.0 5.0 6.0\n"
+    section = (
+        "\n  VIBRATION X Y Z\n  -----------\n  Be 1.0 2.0 3.0\n   \n  B0 4.0 5.0 6.0\n"
+    )
 
     rows = list(iter_data_lines(section, skip_prefixes=("VIBRATION",)))
 
@@ -87,7 +91,9 @@ def test_parse_indexed_value_row_raises_for_non_positive_one_indexed() -> None:
 
 def test_parse_indexed_value_row_parses_multiple_values() -> None:
     """Test parsing multiple values after indices (e.g., complex numbers or vector components)."""
-    indices, values = parse_indexed_value_row("1 2 100.5 -0.01 0.5", n_indices=2, n_values=3)
+    indices, values = parse_indexed_value_row(
+        "1 2 100.5 -0.01 0.5", n_indices=2, n_values=3
+    )
 
     assert indices == (0, 1)
     assert values == (100.5, -0.01, 0.5)

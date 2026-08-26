@@ -58,7 +58,9 @@ def cfour(
             typer.echo("CFOUR parser could not find required files.", err=True)
             raise typer.Exit(code=1)
     elif (not can_parse_strict) and can_parse_loose:
-        logger.warning("CFOUR parser could not find all required files; continuing anyway.")
+        logger.warning(
+            "CFOUR parser could not find all required files; continuing anyway."
+        )
     elif not can_parse_loose:
         typer.echo("CFOUR parser could not find any of the required files.", err=True)
         raise typer.Exit(code=1)

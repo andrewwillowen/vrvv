@@ -116,3 +116,6 @@ packages = ["src/vrvv"]
 
 [tool.pytest.ini_options]
 addopts = "--basetemp=.pytest-tmp"
+
+[tool.ruff]
+extend-exclude = ["src/vrvv/ingest/cfour/previous_data_parser.py"]

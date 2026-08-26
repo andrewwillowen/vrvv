@@ -37,8 +37,7 @@ def parse_rotational_constants(text: str) -> RawRotationalConstants:
     _be_label, be_values_mhz = parse_labeled_float_row(
         rotational_constants_lines[0], n_values=3
     )
-    result = RawRotationalConstants(*be_values_mhz)
-    return result
+    return RawRotationalConstants(*be_values_mhz)
 
 
 def parse_harmonic_frequencies(text: str) -> RawHarmonicFrequencies:
@@ -58,13 +57,12 @@ def parse_harmonic_frequencies(text: str) -> RawHarmonicFrequencies:
         )
         harmonics_wn[index[0]] = values[0]
 
-    result = RawHarmonicFrequencies(by_index=harmonics_wn)
-    return result
+    return RawHarmonicFrequencies(by_index=harmonics_wn)
 
 
 def parse_anharm_out(path: Path) -> RawCFOURAnharm:
     """Parses data from the 'anharm.out' file."""
-    with open(path, "r") as f:
+    with open(path) as f:
         anharm_file = f.read()
 
     return RawCFOURAnharm(
@@ -78,7 +76,7 @@ def parse_zetas_by_section(section: str) -> RawZetasSection:
 
     zetas_lines = list(iter_data_lines(section))
     if not zetas_lines:
-        message = f"Coriolis zeta section is empty!"
+        message = "Coriolis zeta section is empty!"
         raise ValueError(message)
 
     mode_indices = np.empty((len(zetas_lines), 2), dtype=np.int64)
@@ -99,19 +97,19 @@ def parse_zetas(path: Path) -> RawCFOURZetas:
 
     axis1_text = extract_section(
         corioliszeta_file,
-        f"Coriolis Zeta matrix for IXYZ=                     1 :",
-        f"Coriolis Zeta matrix for IXYZ=                     2 :",
+        "Coriolis Zeta matrix for IXYZ=                     1 :",
+        "Coriolis Zeta matrix for IXYZ=                     2 :",
     )
 
     axis2_text = extract_section(
         corioliszeta_file,
-        f"Coriolis Zeta matrix for IXYZ=                     2 :",
-        f"Coriolis Zeta matrix for IXYZ=                     3 :",
+        "Coriolis Zeta matrix for IXYZ=                     2 :",
+        "Coriolis Zeta matrix for IXYZ=                     3 :",
     )
 
     axis3_text = extract_section(
         corioliszeta_file,
-        f"Coriolis Zeta matrix for IXYZ=                     3 :",
+        "Coriolis Zeta matrix for IXYZ=                     3 :",
         None,
     )
 
