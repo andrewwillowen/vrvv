@@ -10,6 +10,7 @@ from vrvv.ingest.cfour.parser import (
     parse_harmonic_frequencies,
     parse_rotational_constants,
     parse_zetas,
+    parse_zetas_by_section,
 )
 
 FIXTURE_ANHARM_OUT = (
@@ -100,6 +101,53 @@ def test_parse_zetas_preserves_cfour_lower_triangular_entries() -> None:
     assert raw.axis2.values[27] == pytest.approx(0.0680318686)
     assert tuple(raw.axis3.mode_indices[-1]) == (12, 11)
     assert raw.axis3.values[-1] == pytest.approx(0.0839831602)
+
+
+def test_parse_zetas_raises_on_empty_section() -> None:
+    with pytest.raises(ValueError, match="empty"):
+        parse_zetas_by_section("")
+
+
+def test_parse_zetas_raises_on_blank_only_section() -> None:
+    with pytest.raises(ValueError, match="empty"):
+        parse_zetas_by_section("\n\n   \n")
+
+
+def test_parse_zetas_raises_on_wrong_column_count() -> None:
+    with pytest.raises(CFOURTextParseError, match="Expected 3 columns"):
+        parse_zetas_by_section("7    7\n")
+
+
+def test_parse_zetas_raises_on_invalid_index_token() -> None:
+    with pytest.raises(CFOURTextParseError, match="Invalid integer token"):
+        parse_zetas_by_section("7    x    -0.9518407855\n")
+
+
+def test_parse_zetas_raises_on_invalid_value_token() -> None:
+    with pytest.raises(CFOURTextParseError, match="Invalid float value"):
+        parse_zetas_by_section("7    7    not-a-float\n")
+
+
+def test_parse_zetas_raises_on_missing_axis1_start_marker(tmp_path) -> None:
+    text = FIXTURE_CORIOLIS_ZETA.read_text()
+    axis1_marker = "Coriolis Zeta matrix for IXYZ=                     1 :"
+    text_missing_axis1_marker = text.replace(axis1_marker, "", 1)
+    missing_marker_zeta = tmp_path / "corioliszeta"
+    missing_marker_zeta.write_text(text_missing_axis1_marker)
+
+    with pytest.raises(CFOURTextParseError, match="Missing section start marker"):
+        parse_zetas(missing_marker_zeta)
+
+
+def test_parse_zetas_raises_on_missing_axis2_end_marker(tmp_path) -> None:
+    text = FIXTURE_CORIOLIS_ZETA.read_text()
+    axis2_marker = "Coriolis Zeta matrix for IXYZ=                     2 :"
+    truncated = text[: text.index(axis2_marker)]
+    truncated_zeta = tmp_path / "corioliszeta"
+    truncated_zeta.write_text(truncated)
+
+    with pytest.raises(CFOURTextParseError, match="Missing section end marker"):
+        parse_zetas(truncated_zeta)
 
 
 def test_parse_cubic_preserves_cfour_permutation_unique_entries() -> None:
