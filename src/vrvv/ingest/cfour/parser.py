@@ -121,9 +121,22 @@ def parse_zetas(path: Path) -> RawCFOURZetas:
 
 
 def parse_cubic(path: Path) -> RawCFOURCubic:
-    """Parses data from the 'cubic' file."""
-    message = f"CFOUR cubic parsing is not implemented yet for path: {path}"
-    raise NotImplementedError(message)
+    """Parse source-faithful cubic force constants from a 'cubic' file."""
+    cubic_lines = list(iter_data_lines(path.read_text()))
+    if not cubic_lines:
+        message = "Cubic force constant file is empty!"
+        raise ValueError(message)
+
+    mode_indices = np.empty((len(cubic_lines), 3), dtype=np.int64)
+    values = np.empty(len(cubic_lines), dtype=np.float64)
+    for row, line in enumerate(cubic_lines):
+        indices, (value,) = parse_indexed_value_row(
+            line, n_indices=3, n_values=1, make_zero_indexed=False
+        )
+        mode_indices[row] = indices
+        values[row] = value
+
+    return RawCFOURCubic(mode_indices=mode_indices, values=values)
 
 
 def parse_didQ(path: Path) -> RawCFOURdidQ:  # noqa: N802

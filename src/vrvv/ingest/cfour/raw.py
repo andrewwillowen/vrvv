@@ -37,7 +37,12 @@ class RawCFOURAnharm:
 
 @dc.dataclass(slots=True)
 class RawCFOURCubic:
-    pass
+    """Source-faithful cubic force constant entries from the 'cubic' file."""
+
+    # CFOUR mode numbers, retained as one-indexed values from the source file.
+    # Only permutation-unique entries are stored, matching the CFOUR file layout.
+    mode_indices: NDArray[np.int64]
+    values: NDArray[np.float64]
 
 
 @dc.dataclass(slots=True)

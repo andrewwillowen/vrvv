@@ -11,6 +11,7 @@ from vrvv.ingest.cfour.normalize import normalize_cfour_data
 from vrvv.ingest.cfour.parser import CFOUR_PLUGIN, CFOURParser
 from vrvv.ingest.cfour.raw import (
     RawCFOURAnharm,
+    RawCFOURCubic,
     RawCFOURZetas,
     RawDataCFOUR,
     RawHarmonicFrequencies,
@@ -22,6 +23,7 @@ __all__ = [
     "CFOUR_PLUGIN",
     "CFOURParser",
     "RawCFOURAnharm",
+    "RawCFOURCubic",
     "RawCFOURZetas",
     "RawDataCFOUR",
     "RawHarmonicFrequencies",

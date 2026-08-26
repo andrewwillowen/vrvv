@@ -2,9 +2,11 @@ from pathlib import Path
 
 import pytest
 
+from vrvv.ingest.cfour._textparse import CFOURTextParseError
 from vrvv.ingest.cfour.parser import (
     CFOURParser,
     parse_anharm_out,
+    parse_cubic,
     parse_harmonic_frequencies,
     parse_rotational_constants,
     parse_zetas,
@@ -19,6 +21,9 @@ FIXTURE_CORIOLIS_ZETA = (
     / "fixtures"
     / "cfour"
     / "corioliszeta"
+)
+FIXTURE_CUBIC = (
+    Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "cfour" / "cubic"
 )
 
 
@@ -95,3 +100,54 @@ def test_parse_zetas_preserves_cfour_lower_triangular_entries() -> None:
     assert raw.axis2.values[27] == pytest.approx(0.0680318686)
     assert tuple(raw.axis3.mode_indices[-1]) == (12, 11)
     assert raw.axis3.values[-1] == pytest.approx(0.0839831602)
+
+
+def test_parse_cubic_preserves_cfour_permutation_unique_entries() -> None:
+    raw = parse_cubic(FIXTURE_CUBIC)
+
+    assert raw.mode_indices.shape == (40, 3)
+    assert raw.values.shape == (40,)
+    assert tuple(raw.mode_indices[0]) == (7, 7, 7)
+    assert raw.values[0] == pytest.approx(-18.0473876585)
+    assert tuple(raw.mode_indices[-1]) == (12, 12, 12)
+    assert raw.values[-1] == pytest.approx(2312.2632715621)
+
+
+def test_parse_cubic_raises_on_empty_file(tmp_path) -> None:
+    empty_cubic = tmp_path / "cubic"
+    empty_cubic.write_text("")
+
+    with pytest.raises(ValueError, match="empty"):
+        parse_cubic(empty_cubic)
+
+
+def test_parse_cubic_raises_on_blank_only_file(tmp_path) -> None:
+    blank_cubic = tmp_path / "cubic"
+    blank_cubic.write_text("\n\n   \n")
+
+    with pytest.raises(ValueError, match="empty"):
+        parse_cubic(blank_cubic)
+
+
+def test_parse_cubic_raises_on_wrong_column_count(tmp_path) -> None:
+    malformed_cubic = tmp_path / "cubic"
+    malformed_cubic.write_text("7    7    7\n")
+
+    with pytest.raises(CFOURTextParseError, match="Expected 4 columns"):
+        parse_cubic(malformed_cubic)
+
+
+def test_parse_cubic_raises_on_invalid_index_token(tmp_path) -> None:
+    malformed_cubic = tmp_path / "cubic"
+    malformed_cubic.write_text("7    x    7    -18.0473876585\n")
+
+    with pytest.raises(CFOURTextParseError, match="Invalid integer token"):
+        parse_cubic(malformed_cubic)
+
+
+def test_parse_cubic_raises_on_invalid_value_token(tmp_path) -> None:
+    malformed_cubic = tmp_path / "cubic"
+    malformed_cubic.write_text("7    7    7    not-a-float\n")
+
+    with pytest.raises(CFOURTextParseError, match="Invalid float value"):
+        parse_cubic(malformed_cubic)
