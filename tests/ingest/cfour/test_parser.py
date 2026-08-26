@@ -57,11 +57,25 @@ def test_can_parse_rejects_non_directory_input(tmp_path) -> None:
     assert not parser.can_parse(path, strict=False)
 
 
-def test_parse_raw_is_placeholder() -> None:
+def test_parse_raw_composes_all_four_cfour_files() -> None:
     parser = CFOURParser()
+    fixture_dir = FIXTURE_ANHARM_OUT.parent
 
-    with pytest.raises(NotImplementedError, match="not implemented yet"):
-        parser.parse_raw(Path("cfour-run"))
+    raw = parser.parse_raw(fixture_dir)
+
+    assert raw.source_path == fixture_dir
+    assert raw.anharm.harmonic_frequencies.by_index[7] == pytest.approx(531.5451)
+    assert raw.zetas.axis1.mode_indices.shape == (66, 2)
+    assert raw.cubic.mode_indices.shape == (40, 3)
+    assert raw.didq.mode_indices.shape == (54, 3)
+
+
+def test_parse_raw_raises_when_required_files_are_missing(tmp_path) -> None:
+    parser = CFOURParser()
+    (tmp_path / "anharm.out").write_text("")
+
+    with pytest.raises(ValueError, match="missing required files"):
+        parser.parse_raw(tmp_path)
 
 
 def test_parse_rotational_constants_from_fixture() -> None:

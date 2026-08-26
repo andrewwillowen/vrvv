@@ -10,6 +10,10 @@ from numpy.typing import NDArray
 @dc.dataclass(slots=True)
 class RawDataCFOUR:
     source_path: Path
+    anharm: "RawCFOURAnharm"
+    zetas: "RawCFOURZetas"
+    cubic: "RawCFOURCubic"
+    didq: "RawCFOURdidQ"
 
 
 @dc.dataclass(slots=True)

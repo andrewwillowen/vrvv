@@ -62,8 +62,7 @@ def parse_harmonic_frequencies(text: str) -> RawHarmonicFrequencies:
 
 def parse_anharm_out(path: Path) -> RawCFOURAnharm:
     """Parses data from the 'anharm.out' file."""
-    with open(path) as f:
-        anharm_file = f.read()
+    anharm_file = path.read_text()
 
     return RawCFOURAnharm(
         equilibrium_rotational_constants=parse_rotational_constants(anharm_file),
@@ -211,8 +210,17 @@ class CFOURParser(ParserPlugin):
 
     def parse_raw(self, path: Path) -> RawDataCFOUR:
         logger.info("CFOUR parse requested for '{}'.", path)
-        message = f"CFOUR parsing logic is not implemented yet for path: {path}"
-        raise NotImplementedError(message)
+        if not self.can_parse(path, strict=True):
+            message = f"CFOUR directory is missing required files: {path}"
+            raise ValueError(message)
+
+        return RawDataCFOUR(
+            source_path=path,
+            anharm=parse_anharm_out(path / "anharm.out"),
+            zetas=parse_zetas(path / "corioliszeta"),
+            cubic=parse_cubic(path / "cubic"),
+            didq=parse_didQ(path / "didQ"),
+        )
 
 
 CFOUR_PLUGIN = CFOURParser()
