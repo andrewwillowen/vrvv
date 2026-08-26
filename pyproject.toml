@@ -118,4 +118,6 @@ packages = ["src/vrvv"]
 addopts = "--basetemp=.pytest-tmp"
 
 [tool.ruff]
-extend-exclude = ["src/vrvv/ingest/cfour/previous_data_parser.py"]
+# Bare filename (no path separator) so Ruff matches it by basename
+# regardless of the current working directory the command is run from.
+extend-exclude = ["previous_data_parser.py"]
