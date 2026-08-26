@@ -7,11 +7,18 @@ from vrvv.ingest.cfour.parser import (
     parse_anharm_out,
     parse_harmonic_frequencies,
     parse_rotational_constants,
+    parse_zetas,
 )
-
 
 FIXTURE_ANHARM_OUT = (
     Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "cfour" / "anharm.out"
+)
+FIXTURE_CORIOLIS_ZETA = (
+    Path(__file__).resolve().parents[3]
+    / "tests"
+    / "fixtures"
+    / "cfour"
+    / "corioliszeta"
 )
 
 
@@ -73,3 +80,18 @@ def test_parse_anharm_out_builds_raw_dataclass_from_fixture() -> None:
 
     assert raw.equilibrium_rotational_constants.X == pytest.approx(609196.61481899)
     assert raw.harmonic_frequencies.by_index[7] == pytest.approx(531.5451)
+
+
+def test_parse_zetas_preserves_cfour_lower_triangular_entries() -> None:
+    raw = parse_zetas(FIXTURE_CORIOLIS_ZETA)
+
+    for section in (raw.axis1, raw.axis2, raw.axis3):
+        assert section.mode_indices.shape == (66, 2)
+        assert section.values.shape == (66,)
+
+    assert tuple(raw.axis1.mode_indices[27]) == (8, 7)
+    assert raw.axis1.values[27] == pytest.approx(-0.9518407855)
+    assert tuple(raw.axis2.mode_indices[27]) == (8, 7)
+    assert raw.axis2.values[27] == pytest.approx(0.0680318686)
+    assert tuple(raw.axis3.mode_indices[-1]) == (12, 11)
+    assert raw.axis3.values[-1] == pytest.approx(0.0839831602)

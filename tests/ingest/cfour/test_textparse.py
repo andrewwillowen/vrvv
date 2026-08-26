@@ -17,9 +17,26 @@ def test_extract_section_returns_text_between_markers() -> None:
     assert result == "\nline-1\nline-2\n"
 
 
+def test_extract_section_returns_text_through_end_of_file_when_end_marker_is_none() -> None:
+    text = "header\nSTART\nline-1\nEND\nline-2\n"
+
+    result = extract_section(text, "START", None)
+
+    assert result == "\nline-1\nEND\nline-2\n"
+
+
 def test_extract_section_raises_when_start_marker_missing() -> None:
     with pytest.raises(CFOURTextParseError, match="Missing section start marker"):
         extract_section("abc", "START", "END")
+
+
+def test_extract_section_to_end_of_file_raises_when_start_marker_missing() -> None:
+    with pytest.raises(CFOURTextParseError, match="Missing section start marker"):
+        extract_section("abc", "START", None)
+
+
+def test_extract_section_to_end_of_file_allows_empty_terminal_section() -> None:
+    assert extract_section("header\nSTART", "START", None) == ""
 
 
 def test_extract_section_raises_when_end_marker_missing() -> None:

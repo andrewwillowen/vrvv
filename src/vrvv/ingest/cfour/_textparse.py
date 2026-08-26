@@ -7,26 +7,28 @@ class CFOURTextParseError(ValueError):
     """Raised when CFOUR text parsing helpers cannot parse expected input."""
 
 
-def extract_section(text: str, start_marker: str, end_marker: str) -> str:
+def extract_section(text: str, start_marker: str, end_marker: str | None) -> str:
     """Extract the text between start and end markers.
     
     Locates ``start_marker`` in the input text, then extracts everything that follows
-    it (up to but not including ``end_marker``). This is useful for isolating data
-    sections from CFOUR output files that are bounded by recognizable delimiters.
+    it (up to but not including ``end_marker``). If ``end_marker`` is None, extracts
+    through the end of the text. This is useful for isolating data sections from
+    CFOUR output files that are bounded by recognizable delimiters.
     
     The markers themselves are not included in the returned text.
     
     Args:
         text: The full text to search (e.g., entire contents of a CFOUR file).
         start_marker: The string that marks the beginning of the section to extract.
-        end_marker: The string that marks the end of the section.
+        end_marker: The string that marks the end of the section, or None to
+            extract through the end of the text.
     
     Returns:
         The text content between (and excluding) the two markers.
     
     Raises:
-        CFOURTextParseError: If ``start_marker`` is not found in text, or if
-            ``end_marker`` is not found after the start marker.
+        CFOURTextParseError: If ``start_marker`` is not found in text, or if a
+            non-None ``end_marker`` is not found after the start marker.
     
     Example:
         >>> text = \"\"\"
@@ -49,6 +51,9 @@ def extract_section(text: str, start_marker: str, end_marker: str) -> str:
         raise CFOURTextParseError(message)
 
     content_start = start_index + len(start_marker)
+    if end_marker is None:
+        return text[content_start:]
+
     end_index = text.find(end_marker, content_start)
     if end_index < 0:
         message = f"Missing section end marker: {end_marker!r} (after start marker {start_marker!r})"

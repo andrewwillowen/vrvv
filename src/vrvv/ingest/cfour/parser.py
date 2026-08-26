@@ -2,23 +2,25 @@
 
 from pathlib import Path
 
+import numpy as np
 from loguru import logger
 
 from vrvv.ingest.base import ParserPlugin
-from vrvv.ingest.cfour.raw import (
-    RawRotationalConstants,
-    RawHarmonicFrequencies,
-    RawCFOURAnharm,
-    RawCFOURCubic,
-    RawCFOURdidQ,
-    RawCFOURZetas,
-    RawDataCFOUR,
-)
 from vrvv.ingest.cfour._textparse import (
     extract_section,
     iter_data_lines,
     parse_indexed_value_row,
     parse_labeled_float_row,
+)
+from vrvv.ingest.cfour.raw import (
+    RawCFOURAnharm,
+    RawCFOURCubic,
+    RawCFOURdidQ,
+    RawCFOURZetas,
+    RawDataCFOUR,
+    RawHarmonicFrequencies,
+    RawRotationalConstants,
+    RawZetasSection,
 )
 
 
@@ -71,10 +73,53 @@ def parse_anharm_out(path: Path) -> RawCFOURAnharm:
     )
 
 
+def parse_zetas_by_section(section: str) -> RawZetasSection:
+    """Parse one CFOUR Coriolis zeta lower-triangular matrix section."""
+
+    zetas_lines = list(iter_data_lines(section))
+    if not zetas_lines:
+        message = f"Coriolis zeta section is empty!"
+        raise ValueError(message)
+
+    mode_indices = np.empty((len(zetas_lines), 2), dtype=np.int64)
+    values = np.empty(len(zetas_lines), dtype=np.float64)
+    for row, line in enumerate(zetas_lines):
+        indices, (value,) = parse_indexed_value_row(
+            line, n_indices=2, n_values=1, make_zero_indexed=False
+        )
+        mode_indices[row] = indices
+        values[row] = value
+
+    return RawZetasSection(mode_indices=mode_indices, values=values)
+
+
 def parse_zetas(path: Path) -> RawCFOURZetas:
-    """Parses data from the 'corioliszeta' file."""
-    message = f"CFOUR corioliszeta parsing is not implemented yet for path: {path}"
-    raise NotImplementedError(message)
+    """Parse source-faithful Coriolis zeta data from a 'corioliszeta' file."""
+    corioliszeta_file = path.read_text()
+
+    axis1_text = extract_section(
+        corioliszeta_file,
+        f"Coriolis Zeta matrix for IXYZ=                     1 :",
+        f"Coriolis Zeta matrix for IXYZ=                     2 :",
+    )
+
+    axis2_text = extract_section(
+        corioliszeta_file,
+        f"Coriolis Zeta matrix for IXYZ=                     2 :",
+        f"Coriolis Zeta matrix for IXYZ=                     3 :",
+    )
+
+    axis3_text = extract_section(
+        corioliszeta_file,
+        f"Coriolis Zeta matrix for IXYZ=                     3 :",
+        None,
+    )
+
+    return RawCFOURZetas(
+        axis1=parse_zetas_by_section(axis1_text),
+        axis2=parse_zetas_by_section(axis2_text),
+        axis3=parse_zetas_by_section(axis3_text),
+    )
 
 
 def parse_cubic(path: Path) -> RawCFOURCubic:

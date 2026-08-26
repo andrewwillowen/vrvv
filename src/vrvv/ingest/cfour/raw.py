@@ -3,6 +3,9 @@
 import dataclasses as dc
 from pathlib import Path
 
+import numpy as np
+from numpy.typing import NDArray
+
 
 @dc.dataclass(slots=True)
 class RawDataCFOUR:
@@ -44,4 +47,15 @@ class RawCFOURdidQ:
 
 @dc.dataclass(slots=True)
 class RawCFOURZetas:
-    pass
+    axis1: "RawZetasSection"
+    axis2: "RawZetasSection"
+    axis3: "RawZetasSection"
+
+
+@dc.dataclass(slots=True)
+class RawZetasSection:
+    """Source-faithful lower-triangular Coriolis zeta entries for one axis section."""
+
+    # CFOUR mode numbers, retained as one-indexed values from the source file.
+    mode_indices: NDArray[np.int64]
+    values: NDArray[np.float64]
