@@ -9,6 +9,8 @@ from numpy.typing import NDArray
 
 @dc.dataclass(slots=True)
 class RawDataCFOUR:
+    """Source-faithful data parsed from a CFOUR anharmonic calculation."""
+
     source_path: Path
     anharm: "RawCFOURAnharm"
     zetas: "RawCFOURZetas"
@@ -18,7 +20,8 @@ class RawDataCFOUR:
 
 @dc.dataclass(slots=True)
 class RawRotationalConstants:
-    # Be (equilibrium rotational constants) in MHz
+    """CFOUR equilibrium rotational constants (Be), in MHz."""
+
     X: float
     Y: float
     Z: float
@@ -26,22 +29,27 @@ class RawRotationalConstants:
 
 @dc.dataclass(slots=True)
 class RawHarmonicFrequencies:
-    # Harmonic frequencies in wavenumbers (cm^-1)
-    # Uses original indexing - lowest energy mode has index of 7
+    """CFOUR harmonic frequencies in wavenumbers (cm^-1).
+
+    Values retain CFOUR's original mode indexing; the lowest-energy
+    vibrational mode normally has index 7.
+    """
+
     by_index: dict[int, float] = dc.field(default_factory=dict)
     first_mode_index: int = 7
 
 
 @dc.dataclass(slots=True)
 class RawCFOURAnharm:
-    # Ingest from anharm.out file
+    """Source-faithful quantities parsed from CFOUR's ``anharm.out`` file."""
+
     equilibrium_rotational_constants: RawRotationalConstants
     harmonic_frequencies: RawHarmonicFrequencies
 
 
 @dc.dataclass(slots=True)
 class RawCFOURCubic:
-    """Source-faithful cubic force constant entries from the 'cubic' file."""
+    """Source-faithful cubic force constants from ``cubic``, in cm^-1."""
 
     # CFOUR mode numbers, retained as one-indexed values from the source file.
     # Only permutation-unique entries are stored, matching the CFOUR file layout.
@@ -51,7 +59,7 @@ class RawCFOURCubic:
 
 @dc.dataclass(slots=True)
 class RawCFOURdidQ:
-    """Source-faithful dipole moment derivative entries from the 'didQ' file."""
+    """Source-faithful inertial derivatives from ``didQ``, in sqrt(amu) * bohr."""
 
     # First two indices are Cartesian axis components (one-indexed, 1-3);
     # the third is the CFOUR mode number (one-indexed, from 7).
@@ -63,6 +71,8 @@ class RawCFOURdidQ:
 
 @dc.dataclass(slots=True)
 class RawCFOURZetas:
+    """Source-faithful, dimensionless Coriolis zeta data for three axes."""
+
     axis1: "RawZetasSection"
     axis2: "RawZetasSection"
     axis3: "RawZetasSection"
@@ -70,7 +80,7 @@ class RawCFOURZetas:
 
 @dc.dataclass(slots=True)
 class RawZetasSection:
-    """Source-faithful lower-triangular Coriolis zeta entries for one axis section."""
+    """Dimensionless lower-triangular Coriolis zeta entries for one axis."""
 
     # CFOUR mode numbers, retained as one-indexed values from the source file.
     mode_indices: NDArray[np.int64]
