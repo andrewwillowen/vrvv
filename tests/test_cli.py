@@ -38,12 +38,10 @@ def test_cfour_help_documents_placeholder_command() -> None:
     assert "Use the CFOUR parsing plugin." in result.stdout
 
 
-def test_cfour_command_reports_placeholder_not_implemented() -> None:
+def test_cfour_command_normalizes_fixture() -> None:
     result = runner.invoke(app, ["parse", "cfour", str(_CFOUR_FIXTURE_DIR)])
 
-    assert result.exit_code == 1
-    output = f"{result.stdout}{result.stderr}"
-    assert "not implemented yet" in output
+    assert result.exit_code == 0
 
 
 def test_verbose_flag_enables_debug_logging() -> None:

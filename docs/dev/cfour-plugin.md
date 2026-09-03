@@ -83,9 +83,8 @@ value and its negative at the transposed position.
 
 ## `cubic`
 
-The `cubic` file reports a cubic force constant for each unique unordered
-mode triple. The legacy implementation treats the source values as
-$\mathrm{cm}^{-1}$ and converts them to Hz for calculations:
+The `cubic` file reports nonzero cubic force constants for unique unordered
+mode triples in $\mathrm{cm}^{-1}$. Normalization converts them to Hz:
 
 $$
 k_{ijk,\mathrm{Hz}} = 100c\,k_{ijk,\mathrm{cm}^{-1}}.
@@ -99,7 +98,8 @@ $$
 
 for every permutation $\pi$ of the three mode indices. The normalized tensor
 therefore has shape `(n_modes, n_modes, n_modes)` and is invariant under
-permutation of its axes.
+permutation of its axes. CFOUR omits symmetry-forbidden terms; normalization
+represents those absent entries as zero.
 
 ## `didQ`
 
@@ -141,3 +141,20 @@ B_{k,\mathrm{Hz}}^{\alpha\beta}
 \frac{a_k^{\alpha\beta}}
 {I_\alpha^0 I_\beta^0\sqrt{\nu_k}}.
 $$
+
+## Normalization validation
+
+Normalization is strict for source data that represents vibrational modes. It
+rejects empty or non-contiguous harmonic mode indices, non-positive harmonic
+frequencies or equilibrium rotational constants, and source mode indices
+outside the harmonic mode range.
+
+Every Cartesian `didQ` entry must be present for every vibrational mode, with
+Cartesian indices in the source range 1--3. Every vibrational lower-triangular
+zeta mode pair must be present for each rotational axis. Duplicate source
+entries are accepted only when they agree numerically; conflicting values are
+an error.
+
+Zeta rows containing either of CFOUR's translational or rotational indices,
+below the first vibrational mode index, are ignored. They have no
+corresponding position in the vibrational-only core tensor.
