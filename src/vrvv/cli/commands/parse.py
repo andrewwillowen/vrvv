@@ -38,6 +38,15 @@ def cfour(
             help="All required CFOUR files must be present.",
         ),
     ] = True,
+    to_csv: Annotated[
+        Path | None,
+        typer.Option(
+            "--to-csv",
+            help="Export normalized data as CSV files in this directory.",
+            file_okay=False,
+            writable=True,
+        ),
+    ] = None,
 ) -> None:
     """Use the CFOUR parsing plugin."""
 
@@ -67,7 +76,9 @@ def cfour(
 
     try:
         raw_data = parser.parse_raw(path)
-        normalize_cfour_data(raw_data)
+        standard_data = normalize_cfour_data(raw_data)
+        if to_csv is not None:
+            standard_data.to_csv(to_csv)
     except NotImplementedError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc

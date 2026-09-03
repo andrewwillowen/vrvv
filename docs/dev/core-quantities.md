@@ -18,6 +18,15 @@ normalizer. It contains `equilibrium_rotational_constants`,
 modes; construction validates that every mode-indexed quantity has that
 length.
 
+`StandardData.to_csv(output_dir)` exports each component to a separate CSV
+file. The files use dense zero-based mode indices and include units in their
+value column headings; `metadata.csv` contains `n_modes` and source metadata.
+For example, normalized CFOUR data can be exported from the command line with:
+
+```console
+vrvv parse cfour <directory> --to-csv <output-directory>
+```
+
 ## Equilibrium rotational constants
 
 `EquilibriumRotationalConstants` holds a one-dimensional `values` array with
