@@ -16,7 +16,7 @@ app = typer.Typer(no_args_is_help=True)
 # Add global flags
 @app.callback()
 def cli_callback(
-    verbose: Annotated[  # noqa: FBT002
+    verbose: Annotated[
         bool,
         typer.Option(
             "--verbose",

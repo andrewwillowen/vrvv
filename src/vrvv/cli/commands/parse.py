@@ -31,7 +31,7 @@ def cfour(
             help="Path to a directory containing CFOUR output files.",
         ),
     ],
-    strict: Annotated[  # noqa: FBT002
+    strict: Annotated[
         bool,
         typer.Option(
             "--strict/--no-strict",

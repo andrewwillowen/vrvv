@@ -138,7 +138,7 @@ def parse_cubic(path: Path) -> RawCFOURCubic:
     return RawCFOURCubic(mode_indices=mode_indices, values=values)
 
 
-def parse_didQ(path: Path) -> RawCFOURdidQ:  # noqa: N802
+def parse_didQ(path: Path) -> RawCFOURdidQ:
     """Parse source-faithful dipole moment derivatives from a 'didQ' file."""
     didq_lines = list(iter_data_lines(path.read_text()))
     if not didq_lines:
