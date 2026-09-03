@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import numpy as np
 import pytest
 
@@ -8,6 +10,7 @@ from vrvv.core.quantities import (
     HarmonicFrequencies,
     InertialDerivatives,
     RotationalDerivatives,
+    StandardData,
 )
 
 
@@ -103,6 +106,99 @@ def test_derivatives_reject_non_symmetric_rotational_axes(
 
     with pytest.raises(ValueError, match="symmetric"):
         derivative_type(values=values)
+
+
+def _standard_data(n_modes: int = 2) -> StandardData:
+    return StandardData(
+        n_modes=n_modes,
+        equilibrium_rotational_constants=EquilibriumRotationalConstants(
+            values=np.zeros(3, dtype=np.float64)
+        ),
+        harmonic_frequencies=HarmonicFrequencies(
+            values=np.arange(n_modes, dtype=np.float64)
+        ),
+        cubic_force_constants=CubicForceConstants(
+            values=np.zeros((n_modes, n_modes, n_modes), dtype=np.float64)
+        ),
+        inertial_derivatives=InertialDerivatives(
+            values=np.zeros((n_modes, 3, 3), dtype=np.float64)
+        ),
+        rotational_derivatives=RotationalDerivatives(
+            values=np.zeros((n_modes, 3, 3), dtype=np.float64)
+        ),
+        coriolis_zetas=CoriolisZetas(
+            values=np.zeros((n_modes, n_modes, 3), dtype=np.float64)
+        ),
+    )
+
+
+def test_standard_data_accepts_matching_mode_indexed_quantities() -> None:
+    data = _standard_data()
+
+    assert data.n_modes == 2
+
+
+def test_standard_data_rejects_mismatched_harmonic_frequency_modes() -> None:
+    data = _standard_data()
+
+    with pytest.raises(ValueError, match="harmonic_frequencies"):
+        replace(
+            data,
+            harmonic_frequencies=HarmonicFrequencies(
+                values=np.arange(3, dtype=np.float64)
+            ),
+        )
+
+
+def test_standard_data_rejects_mismatched_cubic_force_constant_modes() -> None:
+    data = _standard_data()
+
+    with pytest.raises(ValueError, match="cubic_force_constants"):
+        replace(
+            data,
+            cubic_force_constants=CubicForceConstants(
+                values=np.zeros((3, 3, 3), dtype=np.float64)
+            ),
+        )
+
+
+def test_standard_data_rejects_mismatched_inertial_derivative_modes() -> None:
+    data = _standard_data()
+
+    with pytest.raises(ValueError, match="inertial_derivatives"):
+        replace(
+            data,
+            inertial_derivatives=InertialDerivatives(
+                values=np.zeros((3, 3, 3), dtype=np.float64)
+            ),
+        )
+
+
+def test_standard_data_rejects_mismatched_rotational_derivative_modes() -> None:
+    data = _standard_data()
+
+    with pytest.raises(ValueError, match="rotational_derivatives"):
+        replace(
+            data,
+            rotational_derivatives=RotationalDerivatives(
+                values=np.zeros((3, 3, 3), dtype=np.float64)
+            ),
+        )
+
+
+def test_standard_data_rejects_mismatched_coriolis_zeta_modes() -> None:
+    data = _standard_data()
+
+    with pytest.raises(ValueError, match="coriolis_zetas"):
+        replace(
+            data,
+            coriolis_zetas=CoriolisZetas(values=np.zeros((3, 3, 3), dtype=np.float64)),
+        )
+
+
+def test_standard_data_rejects_negative_mode_count() -> None:
+    with pytest.raises(ValueError, match="non-negative"):
+        replace(_standard_data(), n_modes=-1)
 
 
 def test_coriolis_zetas_use_mode_mode_axis_tensor_and_named_accessors() -> None:

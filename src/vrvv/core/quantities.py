@@ -11,9 +11,41 @@ from numpy.typing import NDArray
 
 @dataclass(slots=True)
 class StandardData:
-    """Canonical placeholder container for normalized ingest outputs."""
+    """Canonical collection of normalized input quantities."""
 
+    n_modes: int
+    equilibrium_rotational_constants: "EquilibriumRotationalConstants"
+    harmonic_frequencies: "HarmonicFrequencies"
+    cubic_force_constants: "CubicForceConstants"
+    inertial_derivatives: "InertialDerivatives"
+    rotational_derivatives: "RotationalDerivatives"
+    coriolis_zetas: "CoriolisZetas"
     metadata: dict[str, object] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        """Ensure every vibrationally indexed quantity has n_modes entries."""
+        if self.n_modes < 0:
+            raise ValueError(f"n_modes must be non-negative, got {self.n_modes}")
+
+        # Each quantity validates its own tensor shape. Its leading axis is
+        # therefore sufficient to establish the shared vibrational mode count:
+        # cubic and zeta tensors validate their remaining mode axes, while
+        # derivative tensors validate their trailing Cartesian axes.
+        mode_counts = {
+            "harmonic_frequencies": self.harmonic_frequencies.values.shape[0],
+            "cubic_force_constants": self.cubic_force_constants.values.shape[0],
+            "inertial_derivatives": self.inertial_derivatives.values.shape[0],
+            "rotational_derivatives": self.rotational_derivatives.values.shape[0],
+            "coriolis_zetas": self.coriolis_zetas.values.shape[0],
+        }
+        mismatches = {
+            name: count for name, count in mode_counts.items() if count != self.n_modes
+        }
+        if mismatches:
+            raise ValueError(
+                f"mode-indexed quantities must have n_modes={self.n_modes}, "
+                f"got {mismatches}"
+            )
 
 
 @dataclass(slots=True)

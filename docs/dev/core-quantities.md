@@ -11,8 +11,12 @@ is the lowest-frequency vibrational mode included in the dataset.
 ## `StandardData`
 
 `StandardData` is the top-level canonical container returned by an ingest
-normalizer. It provides source metadata and is intended to compose the
-quantity-specific objects described below as the core data model is completed.
+normalizer. It contains `equilibrium_rotational_constants`,
+`harmonic_frequencies`, `cubic_force_constants`, `inertial_derivatives`,
+`rotational_derivatives`, and `coriolis_zetas`, plus optional source
+`metadata`. Its required `n_modes` value is the shared number of vibrational
+modes; construction validates that every mode-indexed quantity has that
+length.
 
 ## Equilibrium rotational constants
 
