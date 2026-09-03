@@ -7,7 +7,9 @@ from typing import Iterable
 from vrvv.core.quantities import StandardData
 
 
-def _write_csv(path: Path, headers: list[str], rows: Iterable[Iterable[object]]) -> None:
+def _write_csv(
+    path: Path, headers: list[str], rows: Iterable[Iterable[object]]
+) -> None:
     with path.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.writer(stream)
         writer.writerow(headers)
