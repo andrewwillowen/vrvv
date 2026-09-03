@@ -31,17 +31,29 @@ def test_parse_help_lists_parse_subcommands() -> None:
     assert "cfour" in result.stdout
 
 
-def test_cfour_help_documents_placeholder_command() -> None:
+def test_cfour_help_documents_command() -> None:
     result = runner.invoke(app, ["parse", "cfour", "--help"])
 
     assert result.exit_code == 0
     assert "Use the CFOUR parsing plugin." in result.stdout
+    assert "--to-csv" in result.stdout
 
 
 def test_cfour_command_normalizes_fixture() -> None:
     result = runner.invoke(app, ["parse", "cfour", str(_CFOUR_FIXTURE_DIR)])
 
     assert result.exit_code == 0
+
+
+def test_cfour_command_exports_csv(tmp_path: Path) -> None:
+    output_dir = tmp_path / "csv"
+
+    result = runner.invoke(
+        app, ["parse", "cfour", str(_CFOUR_FIXTURE_DIR), "--to-csv", str(output_dir)]
+    )
+
+    assert result.exit_code == 0
+    assert (output_dir / "harmonic_frequencies.csv").exists()
 
 
 def test_verbose_flag_enables_debug_logging() -> None:

@@ -4,6 +4,7 @@ Base units and conversions of physical quantities.
 
 import itertools
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
@@ -21,6 +22,12 @@ class StandardData:
     rotational_derivatives: "RotationalDerivatives"
     coriolis_zetas: "CoriolisZetas"
     metadata: dict[str, object] = field(default_factory=dict)
+
+    def to_csv(self, output_dir: Path) -> list[Path]:
+        """Export all components to CSV files in ``output_dir``."""
+        from vrvv.core.export import export_standard_data
+
+        return export_standard_data(self, output_dir)
 
     def __post_init__(self) -> None:
         """Ensure every vibrationally indexed quantity has n_modes entries."""
