@@ -36,6 +36,8 @@ def test_cfour_help_documents_command() -> None:
 
     assert result.exit_code == 0
     assert "Use the CFOUR parsing plugin." in result.stdout
+    assert "--strict" not in result.stdout
+    assert "--no-strict" not in result.stdout
     assert "--to-csv" in result.stdout
     assert "--to-dat" in result.stdout
     assert "--to-excel" in result.stdout
