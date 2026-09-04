@@ -29,6 +29,12 @@ class StandardData:
 
         return export_standard_data(self, output_dir)
 
+    def to_dat(self, output_path: Path) -> Path:
+        """Export normalized data to the legacy fixed-width DAT format."""
+        from vrvv.core.export import export_standard_data_dat
+
+        return export_standard_data_dat(self, output_path)
+
     def __post_init__(self) -> None:
         """Ensure every vibrationally indexed quantity has n_modes entries."""
         if self.n_modes < 0:

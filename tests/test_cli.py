@@ -37,6 +37,7 @@ def test_cfour_help_documents_command() -> None:
     assert result.exit_code == 0
     assert "Use the CFOUR parsing plugin." in result.stdout
     assert "--to-csv" in result.stdout
+    assert "--to-dat" in result.stdout
 
 
 def test_cfour_command_normalizes_fixture() -> None:
@@ -54,6 +55,17 @@ def test_cfour_command_exports_csv(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     assert (output_dir / "harmonic_frequencies.csv").exists()
+
+
+def test_cfour_command_exports_dat(tmp_path: Path) -> None:
+    output_path = tmp_path / "standard_data.dat"
+
+    result = runner.invoke(
+        app, ["parse", "cfour", str(_CFOUR_FIXTURE_DIR), "--to-dat", str(output_path)]
+    )
+
+    assert result.exit_code == 0
+    assert output_path.is_file()
 
 
 def test_verbose_flag_enables_debug_logging() -> None:

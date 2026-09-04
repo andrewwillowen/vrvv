@@ -1,10 +1,12 @@
 """Export canonical quantities to CSV files."""
 
 import csv
+import math
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 from vrvv.core.quantities import StandardData
+from vrvv.core.units import WAVENUMBER_TO_HZ
 
 
 def _write_csv(
@@ -112,3 +114,118 @@ def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
     )
     paths.append(path)
     return paths
+
+
+def _dat_metadata_text(data: StandardData, key: str, default: str) -> str:
+    """Return one DAT metadata record, rejecting values Fortran cannot read."""
+    value = data.metadata.get(key, default)
+    if not isinstance(value, str):
+        raise TypeError(f"DAT metadata '{key}' must be a string")
+    if len(value) > 76:
+        raise ValueError(f"DAT metadata '{key}' must be at most 76 characters")
+    return value
+
+
+def _dat_metadata_mode(data: StandardData, key: str, default: int) -> int:
+    """Return a one-based resonance-mode index."""
+    value = data.metadata.get(key, default)
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"DAT metadata '{key}' must be an integer")
+    if not 1 <= value <= data.n_modes:
+        raise ValueError(
+            f"DAT metadata '{key}' must be between 1 and {data.n_modes}, got {value}"
+        )
+    return value
+
+
+def _dat_atom_count(data: StandardData) -> int:
+    """Validate the molecular metadata required by the DAT header."""
+    n_atoms = data.metadata.get("n_atoms")
+    is_linear = data.metadata.get("is_linear")
+    if isinstance(n_atoms, bool) or not isinstance(n_atoms, int):
+        raise TypeError("DAT export requires integer metadata 'n_atoms'")
+    if n_atoms <= 0:
+        raise ValueError("DAT export requires positive metadata 'n_atoms'")
+    if not isinstance(is_linear, bool):
+        raise TypeError("DAT export requires boolean metadata 'is_linear'")
+    expected_modes = 3 * n_atoms - (5 if is_linear else 6)
+    if data.n_modes != expected_modes:
+        raise ValueError(
+            "DAT metadata is inconsistent: "
+            f"n_modes={data.n_modes}, n_atoms={n_atoms}, is_linear={is_linear}"
+        )
+    return n_atoms
+
+
+def _format_dat_float(value: float) -> str:
+    """Render a value in the legacy Fortran F12.6 field."""
+    if not math.isfinite(value):
+        raise ValueError("DAT export values must be finite")
+    formatted = f"{value:12.6f}"
+    if len(formatted) != 12:
+        raise ValueError(f"DAT value cannot be represented in an F12.6 field: {value}")
+    return formatted
+
+
+def _write_dat_values(stream, values: Iterable[float]) -> None:
+    """Write legacy DAT numeric records with at most six F12.6 fields."""
+    row: list[str] = []
+    for value in values:
+        row.append(_format_dat_float(float(value)))
+        if len(row) == 6:
+            stream.write("".join(row) + "\n")
+            row = []
+    if row:
+        stream.write("".join(row) + "\n")
+
+
+def export_standard_data_dat(data: StandardData, output_path: Path) -> Path:
+    """Write ``data`` in the fixed-width legacy Fortran DAT interchange format."""
+    output_path = Path(output_path)
+    n_atoms = _dat_atom_count(data)
+    resonance_a = _dat_metadata_mode(data, "dat_resonance_a_mode", 1)
+    resonance_b = _dat_metadata_mode(data, "dat_resonance_b_mode", 2)
+    if resonance_a == resonance_b:
+        raise ValueError("DAT resonance mode indices must be distinct")
+
+    metadata_records = (
+        _dat_metadata_text(data, "dat_title", "vrvv StandardData export"),
+        _dat_metadata_text(
+            data, "dat_program", str(data.metadata.get("source_type", "vrvv"))
+        ),
+        _dat_metadata_text(data, "dat_method", "unknown"),
+        _dat_metadata_text(data, "dat_basis", "unknown"),
+        _dat_metadata_text(
+            data, "dat_resonance_a_description", "Unspecified resonance A"
+        ),
+        _dat_metadata_text(
+            data, "dat_resonance_b_description", "Unspecified resonance B"
+        ),
+    )
+
+    with output_path.open("w", encoding="ascii", newline="\n") as stream:
+        stream.write(f"{n_atoms:4d}{data.n_modes:4d}{resonance_a:4d}{resonance_b:4d}\n")
+        for record in metadata_records:
+            stream.write(f"{record:<76}\n")
+
+        _write_dat_values(stream, data.harmonic_frequencies.values / WAVENUMBER_TO_HZ)
+        _write_dat_values(
+            stream,
+            data.equilibrium_rotational_constants.values / WAVENUMBER_TO_HZ,
+        )
+        _write_dat_values(
+            stream,
+            (
+                value / WAVENUMBER_TO_HZ
+                for value in data.cubic_force_constants.values.ravel(order="F")
+            ),
+        )
+        for axis in range(3):
+            _write_dat_values(stream, data.coriolis_zetas.values[:, :, axis].flat)
+        c_values = (
+            -data.rotational_derivatives.values
+            / data.harmonic_frequencies.values[:, None, None]
+        )
+        for alpha, beta in ((0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (2, 0)):
+            _write_dat_values(stream, c_values[:, alpha, beta])
+    return output_path

@@ -27,6 +27,16 @@ For example, normalized CFOUR data can be exported from the command line with:
 vrvv parse cfour <directory> --to-csv <output-directory>
 ```
 
+`StandardData.to_dat(output_path)` writes one fixed-width legacy Fortran DAT
+file. It is available from the CLI with:
+
+```console
+vrvv parse cfour <directory> --to-dat output.dat
+```
+
+See [Legacy DAT output format](dat-output-format.md) for its record sequence,
+metadata keys, and unit conversions.
+
 ## Equilibrium rotational constants
 
 `EquilibriumRotationalConstants` holds a one-dimensional `values` array with

@@ -47,6 +47,15 @@ def cfour(
             writable=True,
         ),
     ] = None,
+    to_dat: Annotated[
+        Path | None,
+        typer.Option(
+            "--to-dat",
+            help="Export normalized data as a legacy Fortran DAT file.",
+            dir_okay=False,
+            writable=True,
+        ),
+    ] = None,
 ) -> None:
     """Use the CFOUR parsing plugin."""
 
@@ -79,6 +88,8 @@ def cfour(
         standard_data = normalize_cfour_data(raw_data)
         if to_csv is not None:
             standard_data.to_csv(to_csv)
+        if to_dat is not None:
+            standard_data.to_dat(to_dat)
     except NotImplementedError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
