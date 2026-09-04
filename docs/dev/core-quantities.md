@@ -37,6 +37,16 @@ vrvv parse cfour <directory> --to-dat output.dat
 See [Legacy DAT output format](dat-output-format.md) for its record sequence,
 metadata keys, and unit conversions.
 
+`StandardData.to_excel(output_path)` writes the same component tables as the
+CSV export to separate worksheets in one Excel workbook. The
+`equilibrium_rotational_constants` CSV table uses the shortened worksheet name
+`equilibrium_rotational_consts` because Excel worksheet names are limited to
+31 characters:
+
+```console
+vrvv parse cfour <directory> --to-excel normalized-data.xlsx
+```
+
 ## Equilibrium rotational constants
 
 `EquilibriumRotationalConstants` holds a one-dimensional `values` array with

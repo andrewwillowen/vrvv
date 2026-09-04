@@ -35,6 +35,12 @@ class StandardData:
 
         return export_standard_data_dat(self, output_path)
 
+    def to_excel(self, output_path: Path) -> Path:
+        """Export all components to worksheets in one Excel workbook."""
+        from vrvv.core.export import export_standard_data_excel
+
+        return export_standard_data_excel(self, output_path)
+
     def __post_init__(self) -> None:
         """Ensure every vibrationally indexed quantity has n_modes entries."""
         if self.n_modes < 0:

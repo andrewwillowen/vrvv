@@ -18,16 +18,13 @@ def _write_csv(
         writer.writerows(rows)
 
 
-def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
-    """Write each component of ``data`` to a clearly labelled CSV file."""
-    output_dir = Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+def _standard_data_tables(
+    data: StandardData,
+) -> Iterable[tuple[str, list[str], Iterable[Iterable[object]]]]:
+    """Yield the component tables shared by CSV and Excel exports."""
     axes = ("X", "Y", "Z")
-    paths: list[Path] = []
-
-    path = output_dir / "equilibrium_rotational_constants.csv"
-    _write_csv(
-        path,
+    yield (
+        "equilibrium_rotational_constants",
         ["rotational_axis", "value_hz"],
         (
             (axis, value)
@@ -36,22 +33,16 @@ def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
             )
         ),
     )
-    paths.append(path)
-
-    path = output_dir / "harmonic_frequencies.csv"
-    _write_csv(
-        path,
+    yield (
+        "harmonic_frequencies",
         ["mode_index_zero_based", "frequency_hz"],
         (
             (index, value)
             for index, value in enumerate(data.harmonic_frequencies.values)
         ),
     )
-    paths.append(path)
-
-    path = output_dir / "cubic_force_constants.csv"
-    _write_csv(
-        path,
+    yield (
+        "cubic_force_constants",
         [
             "mode_i_zero_based",
             "mode_j_zero_based",
@@ -65,7 +56,6 @@ def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
             for k in range(data.n_modes)
         ),
     )
-    paths.append(path)
 
     for name, values, unit in (
         (
@@ -75,9 +65,8 @@ def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
         ),
         ("rotational_derivatives", data.rotational_derivatives.values, "value_hz"),
     ):
-        path = output_dir / f"{name}.csv"
-        _write_csv(
-            path,
+        yield (
+            name,
             ["mode_index_zero_based", "axis_alpha", "axis_beta", unit],
             (
                 (mode, axes[alpha], axes[beta], values[mode, alpha, beta])
@@ -86,11 +75,8 @@ def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
                 for beta in range(3)
             ),
         )
-        paths.append(path)
-
-    path = output_dir / "coriolis_zetas.csv"
-    _write_csv(
-        path,
+    yield (
+        "coriolis_zetas",
         [
             "mode_i_zero_based",
             "mode_j_zero_based",
@@ -104,16 +90,45 @@ def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
             for axis in range(3)
         ),
     )
-    paths.append(path)
-
-    path = output_dir / "metadata.csv"
-    _write_csv(
-        path,
+    yield (
+        "metadata",
         ["key", "value"],
         [("n_modes", data.n_modes), *data.metadata.items()],
     )
-    paths.append(path)
+
+
+def export_standard_data(data: StandardData, output_dir: Path) -> list[Path]:
+    """Write each component of ``data`` to a clearly labelled CSV file."""
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    paths: list[Path] = []
+    for name, headers, rows in _standard_data_tables(data):
+        path = output_dir / f"{name}.csv"
+        _write_csv(path, headers, rows)
+        paths.append(path)
     return paths
+
+
+def export_standard_data_excel(data: StandardData, output_path: Path) -> Path:
+    """Write each canonical component to a worksheet in an Excel workbook."""
+    from openpyxl import Workbook  # type: ignore[import-untyped]
+
+    output_path = Path(output_path)
+    workbook = Workbook(write_only=True)
+    for name, headers, rows in _standard_data_tables(data):
+        worksheet_name = (
+            "equilibrium_rotational_consts"
+            if name == "equilibrium_rotational_constants"
+            else name
+        )
+        worksheet = workbook.create_sheet(title=worksheet_name)
+        worksheet.append(headers)
+        for row in rows:
+            worksheet.append(
+                [str(value) if isinstance(value, Path) else value for value in row]
+            )
+    workbook.save(output_path)
+    return output_path
 
 
 def _dat_metadata_text(data: StandardData, key: str, default: str) -> str:

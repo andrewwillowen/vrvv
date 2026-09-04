@@ -56,6 +56,15 @@ def cfour(
             writable=True,
         ),
     ] = None,
+    to_excel: Annotated[
+        Path | None,
+        typer.Option(
+            "--to-excel",
+            help="Export normalized data to worksheets in an Excel workbook.",
+            dir_okay=False,
+            writable=True,
+        ),
+    ] = None,
 ) -> None:
     """Use the CFOUR parsing plugin."""
 
@@ -90,6 +99,8 @@ def cfour(
             standard_data.to_csv(to_csv)
         if to_dat is not None:
             standard_data.to_dat(to_dat)
+        if to_excel is not None:
+            standard_data.to_excel(to_excel)
     except NotImplementedError as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc

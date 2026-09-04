@@ -4,8 +4,9 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from openpyxl import load_workbook  # type: ignore[import-untyped]
 
-from vrvv.core.export import export_standard_data
+from vrvv.core.export import export_standard_data, export_standard_data_excel
 from vrvv.core.units import WAVENUMBER_TO_HZ
 from vrvv.ingest.cfour.normalize import normalize_cfour_data
 from vrvv.ingest.cfour.parser import CFOURParser
@@ -63,6 +64,52 @@ def test_export_standard_data_writes_component_csv_files(tmp_path) -> None:
         assert rows[0] == headers
         assert len(rows) == row_count + 1
         assert all(row for row in rows[1:])
+
+
+def test_export_standard_data_excel_writes_component_worksheets(tmp_path) -> None:
+    data = normalize_cfour_data(CFOURParser().parse_raw(FIXTURE_DIR))
+    output_path = tmp_path / "standard_data.xlsx"
+
+    path = export_standard_data_excel(data, output_path)
+
+    assert path == output_path
+    workbook = load_workbook(output_path, data_only=True)
+    expected_headers = {
+        "equilibrium_rotational_consts": ["rotational_axis", "value_hz"],
+        "harmonic_frequencies": ["mode_index_zero_based", "frequency_hz"],
+        "cubic_force_constants": [
+            "mode_i_zero_based",
+            "mode_j_zero_based",
+            "mode_k_zero_based",
+            "value_hz",
+        ],
+        "inertial_derivatives": [
+            "mode_index_zero_based",
+            "axis_alpha",
+            "axis_beta",
+            "value_kg^0.5_m",
+        ],
+        "rotational_derivatives": [
+            "mode_index_zero_based",
+            "axis_alpha",
+            "axis_beta",
+            "value_hz",
+        ],
+        "coriolis_zetas": [
+            "mode_i_zero_based",
+            "mode_j_zero_based",
+            "rotational_axis",
+            "value_dimensionless",
+        ],
+        "metadata": ["key", "value"],
+    }
+    assert workbook.sheetnames == list(expected_headers)
+    for worksheet_name, headers in expected_headers.items():
+        worksheet = workbook[worksheet_name]
+        assert list(next(worksheet.values)) == headers
+    assert workbook["harmonic_frequencies"].max_row == data.n_modes + 1
+    assert workbook["cubic_force_constants"].max_row == data.n_modes**3 + 1
+    assert workbook["metadata"]["B3"].value == str(FIXTURE_DIR)
 
 
 def test_export_standard_data_dat_writes_legacy_fortran_records(tmp_path) -> None:

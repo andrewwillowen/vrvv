@@ -38,6 +38,7 @@ def test_cfour_help_documents_command() -> None:
     assert "Use the CFOUR parsing plugin." in result.stdout
     assert "--to-csv" in result.stdout
     assert "--to-dat" in result.stdout
+    assert "--to-excel" in result.stdout
 
 
 def test_cfour_command_normalizes_fixture() -> None:
@@ -62,6 +63,18 @@ def test_cfour_command_exports_dat(tmp_path: Path) -> None:
 
     result = runner.invoke(
         app, ["parse", "cfour", str(_CFOUR_FIXTURE_DIR), "--to-dat", str(output_path)]
+    )
+
+    assert result.exit_code == 0
+    assert output_path.is_file()
+
+
+def test_cfour_command_exports_excel(tmp_path: Path) -> None:
+    output_path = tmp_path / "standard_data.xlsx"
+
+    result = runner.invoke(
+        app,
+        ["parse", "cfour", str(_CFOUR_FIXTURE_DIR), "--to-excel", str(output_path)],
     )
 
     assert result.exit_code == 0
