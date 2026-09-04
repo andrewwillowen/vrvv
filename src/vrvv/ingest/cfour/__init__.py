@@ -6,3 +6,30 @@ relevant data in CFOUR files, then exposing that
 through the plugin system for use in the rest of
 the vrvv package.
 """
+
+from vrvv.ingest.cfour.normalize import normalize_cfour_data
+from vrvv.ingest.cfour.parser import CFOUR_PLUGIN, CFOURParser
+from vrvv.ingest.cfour.raw import (
+    RawCFOURAnharm,
+    RawCFOURCubic,
+    RawCFOURdidQ,
+    RawCFOURZetas,
+    RawDataCFOUR,
+    RawHarmonicFrequencies,
+    RawRotationalConstants,
+    RawZetasSection,
+)
+
+__all__ = [
+    "CFOUR_PLUGIN",
+    "CFOURParser",
+    "RawCFOURAnharm",
+    "RawCFOURCubic",
+    "RawCFOURZetas",
+    "RawCFOURdidQ",
+    "RawDataCFOUR",
+    "RawHarmonicFrequencies",
+    "RawRotationalConstants",
+    "RawZetasSection",
+    "normalize_cfour_data",
+]

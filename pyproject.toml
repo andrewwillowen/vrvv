@@ -21,6 +21,7 @@ classifiers = [
 dependencies = [
     "loguru>=0.7.3",
     "numpy>=2.5.1",
+    "openpyxl>=3.1.5",
     "scipy>=1.18.0",
     "sympy>=1.14.0",
     "typer>=0.27.0",
@@ -66,6 +67,7 @@ serve = "zensical serve"
 [tool.hatch.envs.types]
 extra-dependencies = [
   "mypy>=1.0.0",
+  "vrvv[dev]",
 ]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src/vrvv tests}"
@@ -113,3 +115,10 @@ exclude = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/vrvv"]
 
+[tool.pytest.ini_options]
+addopts = "--basetemp=.pytest-tmp"
+
+[tool.ruff]
+# Bare filename (no path separator) so Ruff matches it by basename
+# regardless of the current working directory the command is run from.
+extend-exclude = ["previous_data_parser.py"]

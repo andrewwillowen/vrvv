@@ -1,3 +1,6 @@
+# Pytest uses local dir for tmp instead of /tmp
+.pytest-tmp/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
