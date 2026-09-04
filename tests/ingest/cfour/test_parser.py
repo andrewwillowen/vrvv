@@ -5,7 +5,9 @@ import pytest
 from vrvv.ingest.cfour._textparse import CFOURTextParseError
 from vrvv.ingest.cfour.parser import (
     CFOURParser,
+    _classify_molecule,
     parse_anharm_out,
+    parse_atom_count,
     parse_cubic,
     parse_didQ,
     parse_harmonic_frequencies,
@@ -104,6 +106,27 @@ def test_parse_anharm_out_builds_raw_dataclass_from_fixture() -> None:
 
     assert pytest.approx(609196.61481899) == raw.equilibrium_rotational_constants.X
     assert raw.harmonic_frequencies.by_index[7] == pytest.approx(531.5451)
+    assert raw.n_atoms == 4
+    assert not raw.is_linear
+
+
+def test_parse_atom_count_reads_cfour_geometry_report() -> None:
+    assert parse_atom_count("@GETXYZ-I,     3 atoms read from ZMAT.") == 3
+
+
+def test_parse_atom_count_rejects_missing_geometry_report() -> None:
+    with pytest.raises(ValueError, match="atom count"):
+        parse_atom_count("No geometry information is present.")
+
+
+def test_classify_molecule_supports_nonlinear_and_linear_mode_layouts() -> None:
+    assert not _classify_molecule(n_atoms=4, n_modes=6, first_mode_index=7)
+    assert _classify_molecule(n_atoms=3, n_modes=4, first_mode_index=6)
+
+
+def test_classify_molecule_rejects_invalid_mode_layout() -> None:
+    with pytest.raises(ValueError, match="inconsistent"):
+        _classify_molecule(n_atoms=3, n_modes=4, first_mode_index=7)
 
 
 def test_parse_zetas_preserves_cfour_lower_triangular_entries() -> None:

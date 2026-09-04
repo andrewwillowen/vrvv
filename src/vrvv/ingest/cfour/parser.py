@@ -1,5 +1,6 @@
 """Read CFOUR files and return a CFOUR-specific raw object."""
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -57,16 +58,52 @@ def parse_harmonic_frequencies(text: str) -> RawHarmonicFrequencies:
         )
         harmonics_wn[index[0]] = values[0]
 
-    return RawHarmonicFrequencies(by_index=harmonics_wn)
+    if not harmonics_wn:
+        raise ValueError("CFOUR harmonic frequencies are empty")
+    return RawHarmonicFrequencies(
+        by_index=harmonics_wn, first_mode_index=min(harmonics_wn)
+    )
+
+
+def parse_atom_count(text: str) -> int:
+    """Extract the molecular atom count reported by CFOUR's geometry reader."""
+    match = re.search(r"@GETXYZ-I,\s+(\d+)\s+atoms read from ZMAT\.", text)
+    if match is None:
+        raise ValueError("CFOUR anharm.out does not report an atom count")
+    return int(match.group(1))
+
+
+def _classify_molecule(n_atoms: int, n_modes: int, first_mode_index: int) -> bool:
+    """Classify molecular geometry from CFOUR's atom and mode counts."""
+    nonlinear_modes = 3 * n_atoms - 6
+    linear_modes = 3 * n_atoms - 5
+    if n_modes == nonlinear_modes and first_mode_index == 7:
+        return False
+    if n_modes == linear_modes and first_mode_index == 6:
+        return True
+    raise ValueError(
+        "CFOUR harmonic mode layout is inconsistent with atom count: "
+        f"n_atoms={n_atoms}, n_modes={n_modes}, first_mode_index={first_mode_index}"
+    )
 
 
 def parse_anharm_out(path: Path) -> RawCFOURAnharm:
     """Parses data from the 'anharm.out' file."""
     anharm_file = path.read_text()
 
+    harmonic_frequencies = parse_harmonic_frequencies(anharm_file)
+    n_atoms = parse_atom_count(anharm_file)
+    is_linear = _classify_molecule(
+        n_atoms,
+        len(harmonic_frequencies.by_index),
+        harmonic_frequencies.first_mode_index,
+    )
+
     return RawCFOURAnharm(
         equilibrium_rotational_constants=parse_rotational_constants(anharm_file),
-        harmonic_frequencies=parse_harmonic_frequencies(anharm_file),
+        harmonic_frequencies=harmonic_frequencies,
+        n_atoms=n_atoms,
+        is_linear=is_linear,
     )
 
 

@@ -261,6 +261,8 @@ def normalize_cfour_data(raw_data: RawDataCFOUR) -> StandardData:
     metadata: dict[str, object] = {
         "source_path": raw_data.source_path,
         "source_type": "CFOUR",
+        "n_atoms": raw_data.anharm.n_atoms,
+        "is_linear": raw_data.anharm.is_linear,
     }
     return StandardData(
         n_modes=n_modes,

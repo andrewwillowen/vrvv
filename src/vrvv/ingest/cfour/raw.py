@@ -45,6 +45,8 @@ class RawCFOURAnharm:
 
     equilibrium_rotational_constants: RawRotationalConstants
     harmonic_frequencies: RawHarmonicFrequencies
+    n_atoms: int
+    is_linear: bool
 
 
 @dc.dataclass(slots=True)

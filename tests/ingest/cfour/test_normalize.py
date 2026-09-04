@@ -31,6 +31,8 @@ def test_normalize_cfour_data_converts_fixture_to_standard_data() -> None:
     assert data.metadata == {
         "source_path": FIXTURE_DIR,
         "source_type": "CFOUR",
+        "n_atoms": 4,
+        "is_linear": False,
     }
     np.testing.assert_allclose(
         data.equilibrium_rotational_constants.values,
