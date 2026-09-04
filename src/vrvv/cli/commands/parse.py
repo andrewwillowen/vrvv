@@ -101,6 +101,6 @@ def cfour(
             standard_data.to_dat(to_dat)
         if to_excel is not None:
             standard_data.to_excel(to_excel)
-    except NotImplementedError as exc:
+    except (NotImplementedError, OSError, ValueError) as exc:
         typer.echo(str(exc), err=True)
         raise typer.Exit(code=1) from exc
