@@ -176,7 +176,7 @@ def parse_cubic(path: Path) -> RawCFOURCubic:
 
 
 def parse_didQ(path: Path) -> RawCFOURdidQ:
-    """Parse source-faithful dipole moment derivatives from a 'didQ' file."""
+    """Parse source-faithful inertial derivatives from a 'didQ' file."""
     didq_lines = list(iter_data_lines(path.read_text()))
     if not didq_lines:
         message = "didQ file is empty!"

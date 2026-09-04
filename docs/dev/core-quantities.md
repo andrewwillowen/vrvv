@@ -61,7 +61,7 @@ and `Z` properties provide named access to those entries.
 ## Harmonic frequencies
 
 `HarmonicFrequencies` holds a one-dimensional `values` array in Hz.
-`values[k]` is the harmonic frequency of zero-indexed vibrational mode $k`.
+`values[k]` is the harmonic frequency of zero-indexed vibrational mode $k$.
 
 | Type | Array unit | Required invariants |
 | --- | --- | --- |
