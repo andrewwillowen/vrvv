@@ -13,16 +13,22 @@ one-based in this file even though core arrays use zero-based mode indices.
 It is followed by six 76-character text records: title, source program,
 method, basis, and descriptions for resonances A and B.
 
-All remaining values use `F12.6` fields with up to six values per physical
-record, in this order:
+All remaining values use 12-character fields with up to six values per physical
+record. The Fortran reader requires the following field formats, in this order:
 
-1. Harmonic frequencies.
-2. Equilibrium rotational constants in X, Y, Z axis order.
-3. The full cubic force-constant tensor, in Fortran column-major array order.
-4. Three dense Coriolis-zeta matrices, in X, Y, Z order; each matrix is
+1. Harmonic frequencies (`F12.4`).
+2. Equilibrium rotational constants in X, Y, Z axis order (`F12.8`).
+3. The full cubic force-constant tensor (`F12.8`), in Fortran column-major
+   array order.
+4. Three dense Coriolis-zeta matrices (`F12.9`), in X, Y, Z order; each matrix is
    written row by row.
-5. Six dimensionless C vectors derived from rotational derivatives:
+5. Six dimensionless C vectors (`F12.9`) derived from rotational derivatives:
    `aa`, `bb`, `cc`, `ab`, `bc`, then `ca`.
+
+The exporter uses the stated precision whenever it fits in the 12-character
+field. For larger magnitudes it writes fewer fractional digits rather than
+overflowing the field; Fortran formatted input reads the explicit decimal
+point correctly with the same `F12.*` reader format.
 
 ## Units
 
@@ -57,19 +63,20 @@ contains every value required by its declared `Nvibs`.
 <span style="color: #0369a1; font-weight: bold">cc-pVDZ</span> <span style="color: #6b7280; font-style: italic"># Basis</span>
 <span style="color: #0369a1; font-weight: bold">Mode 1 resonance</span> <span style="color: #6b7280; font-style: italic"># A description</span>
 <span style="color: #0369a1; font-weight: bold">Mode 2 resonance</span> <span style="color: #6b7280; font-style: italic"># B description</span>
-<span style="color: #b45309; font-weight: bold">  500.000000  750.000000 1000.000000</span> <span style="color: #6b7280; font-style: italic"># omega, cm^-1</span>
-<span style="color: #047857; font-weight: bold">    0.200000    0.300000    0.500000</span> <span style="color: #6b7280; font-style: italic"># ABC, cm^-1</span>
-<span style="color: #be123c; font-weight: bold">   -1.000000    0.000000    0.000000 ...</span> <span style="color: #6b7280; font-style: italic"># k_cubic, cm^-1; full 3 x 3 x 3 tensor</span>
-<span style="color: #6d28d9; font-weight: bold">    0.000000    0.100000   -0.100000</span> <span style="color: #6b7280; font-style: italic"># zeta X, dimensionless</span>
-<span style="color: #6d28d9; font-weight: bold">   -0.100000    0.000000    0.200000</span>
-<span style="color: #6d28d9; font-weight: bold">    0.100000   -0.200000    0.000000</span>
+<span style="color: #b45309; font-weight: bold">    500.0000    750.0000   1000.0000</span> <span style="color: #6b7280; font-style: italic"># omega, cm^-1</span>
+<span style="color: #047857; font-weight: bold">  0.20000000  0.30000000  0.50000000</span> <span style="color: #6b7280; font-style: italic"># ABC, cm^-1</span>
+<span style="color: #be123c; font-weight: bold"> -1.00000000  0.00000000  0.00000000 ...</span> <span style="color: #6b7280; font-style: italic"># k_cubic, cm^-1; full 3 x 3 x 3 tensor</span>
+<span style="color: #6d28d9; font-weight: bold"> 0.000000000 0.100000000-0.100000000</span> <span style="color: #6b7280; font-style: italic"># zeta X, dimensionless</span>
+<span style="color: #6d28d9; font-weight: bold">-0.100000000 0.000000000 0.200000000</span>
+<span style="color: #6d28d9; font-weight: bold"> 0.100000000-0.200000000 0.000000000</span>
 <span style="color: #6d28d9; font-weight: bold">    ...</span> <span style="color: #6b7280; font-style: italic"># zeta Y, then zeta Z</span>
-<span style="color: #b91c1c; font-weight: bold">    0.010000    0.020000    0.030000</span> <span style="color: #6b7280; font-style: italic"># Caa, dimensionless</span>
+<span style="color: #b91c1c; font-weight: bold"> 0.010000000 0.020000000 0.030000000</span> <span style="color: #6b7280; font-style: italic"># Caa, dimensionless</span>
 <span style="color: #b91c1c; font-weight: bold">    ...</span> <span style="color: #6b7280; font-style: italic"># Cbb, Ccc, Cab, Cbc, Cca follow</span></pre>
 
 Colors identify file regions only; the comments and ellipses are explanatory
 and **must not** appear in an exported DAT file. Every actual numeric field is
-fixed-width `F12.6`, and the six text records are each 76 characters wide.
+12 characters wide with the block-specific precision above, and the six text
+records are each 76 characters wide.
 
 ## Metadata
 

@@ -90,6 +90,12 @@ $$
 k_{ijk,\mathrm{Hz}} = 100c\,k_{ijk,\mathrm{cm}^{-1}}.
 $$
 
+These are third derivatives with respect to **dimensionless** normal coordinates:
+
+$$
+\phi_{ijk} = \frac{\partial^3 V}{\partial q_i\,\partial q_j\,\partial q_k}.
+$$
+
 Normalization expands every reported value to the full dense tensor:
 
 $$

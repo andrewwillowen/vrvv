@@ -172,21 +172,24 @@ def _dat_atom_count(data: StandardData) -> int:
     return n_atoms
 
 
-def _format_dat_float(value: float) -> str:
-    """Render a value in the legacy Fortran F12.6 field."""
+def _format_dat_float(value: float, fractional_digits: int) -> str:
+    """Render a finite value with maximal precision in a 12-character field."""
     if not math.isfinite(value):
         raise ValueError("DAT export values must be finite")
-    formatted = f"{value:12.6f}"
-    if len(formatted) != 12:
-        raise ValueError(f"DAT value cannot be represented in an F12.6 field: {value}")
-    return formatted
+    for digits in range(fractional_digits, -1, -1):
+        formatted = f"{value:12.{digits}f}"
+        if len(formatted) == 12:
+            return formatted
+    raise ValueError(
+        f"DAT value cannot be represented in a 12-character field: {value}"
+    )
 
 
-def _write_dat_values(stream, values: Iterable[float]) -> None:
-    """Write legacy DAT numeric records with at most six F12.6 fields."""
+def _write_dat_values(stream, values: Iterable[float], fractional_digits: int) -> None:
+    """Write DAT numeric records with at most six fixed-width fields."""
     row: list[str] = []
     for value in values:
-        row.append(_format_dat_float(float(value)))
+        row.append(_format_dat_float(float(value), fractional_digits))
         if len(row) == 6:
             stream.write("".join(row) + "\n")
             row = []
@@ -223,10 +226,13 @@ def export_standard_data_dat(data: StandardData, output_path: Path) -> Path:
         for record in metadata_records:
             stream.write(f"{record:<76}\n")
 
-        _write_dat_values(stream, data.harmonic_frequencies.values / WAVENUMBER_TO_HZ)
+        _write_dat_values(
+            stream, data.harmonic_frequencies.values / WAVENUMBER_TO_HZ, 4
+        )
         _write_dat_values(
             stream,
             data.equilibrium_rotational_constants.values / WAVENUMBER_TO_HZ,
+            8,
         )
         _write_dat_values(
             stream,
@@ -234,13 +240,14 @@ def export_standard_data_dat(data: StandardData, output_path: Path) -> Path:
                 value / WAVENUMBER_TO_HZ
                 for value in data.cubic_force_constants.values.ravel(order="F")
             ),
+            8,
         )
         for axis in range(3):
-            _write_dat_values(stream, data.coriolis_zetas.values[:, :, axis].flat)
+            _write_dat_values(stream, data.coriolis_zetas.values[:, :, axis].flat, 9)
         c_values = (
             -data.rotational_derivatives.values
             / data.harmonic_frequencies.values[:, None, None]
         )
         for alpha, beta in ((0, 0), (1, 1), (2, 2), (0, 1), (1, 2), (2, 0)):
-            _write_dat_values(stream, c_values[:, alpha, beta])
+            _write_dat_values(stream, c_values[:, alpha, beta], 9)
     return output_path

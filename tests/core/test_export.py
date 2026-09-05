@@ -112,7 +112,9 @@ def test_export_standard_data_excel_writes_component_worksheets(tmp_path) -> Non
     assert workbook["metadata"]["B3"].value == str(FIXTURE_DIR)
 
 
-def test_export_standard_data_dat_writes_legacy_fortran_records(tmp_path) -> None:
+def test_export_standard_data_dat_writes_fortran_records_at_reader_precision(
+    tmp_path,
+) -> None:
     data = normalize_cfour_data(CFOURParser().parse_raw(FIXTURE_DIR))
     output_path = tmp_path / "standard_data.dat"
 
@@ -128,23 +130,40 @@ def test_export_standard_data_dat_writes_legacy_fortran_records(tmp_path) -> Non
     np.testing.assert_allclose(
         [float(lines[7][index : index + 12]) for index in range(0, 72, 12)],
         data.harmonic_frequencies.values / WAVENUMBER_TO_HZ,
-        atol=5e-7,
+        atol=5e-5,
     )
     np.testing.assert_allclose(
         [float(lines[8][index : index + 12]) for index in range(0, 36, 12)],
         data.equilibrium_rotational_constants.values / WAVENUMBER_TO_HZ,
-        atol=5e-7,
+        atol=5e-9,
     )
     first_cubic = float(lines[9][:12])
     assert first_cubic == pytest.approx(
         data.cubic_force_constants.values[0, 0, 0] / WAVENUMBER_TO_HZ,
-        abs=5e-7,
+        abs=5e-9,
     )
     c_aa_start = 63
     np.testing.assert_allclose(
         [float(lines[c_aa_start][index : index + 12]) for index in range(0, 72, 12)],
         -data.rotational_derivatives.values[:, 0, 0] / data.harmonic_frequencies.values,
-        atol=5e-7,
+        atol=5e-10,
+    )
+    assert lines[7] == "".join(
+        f"{value:12.4f}"
+        for value in data.harmonic_frequencies.values / WAVENUMBER_TO_HZ
+    )
+    assert lines[8] == "".join(
+        f"{value:12.8f}"
+        for value in data.equilibrium_rotational_constants.values / WAVENUMBER_TO_HZ
+    )
+    assert lines[45] == "".join(
+        f"{value:12.9f}" for value in data.coriolis_zetas.values[0, :, 0]
+    )
+    assert lines[9][:12] == (
+        f"{data.cubic_force_constants.values[0, 0, 0] / WAVENUMBER_TO_HZ:12.8f}"
+    )
+    assert lines[9][60:72] == (
+        f"{data.cubic_force_constants.values[5, 0, 0] / WAVENUMBER_TO_HZ:12.7f}"
     )
 
 

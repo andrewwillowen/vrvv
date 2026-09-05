@@ -219,3 +219,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+scripts/claudes-fortran
+scripts/hn3_csv
+tests/fixtures/cfour/kestrel-fivezeta-hn3.cubic
+tests/fixtures/cfour/kestrel-triplezeta-dn3.cubic
